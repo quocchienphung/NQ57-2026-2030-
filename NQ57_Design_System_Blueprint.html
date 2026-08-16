@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NQ57 · Design System Blueprint — Bàn giao Design → Development</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   NQ57 · DESIGN SYSTEM BLUEPRINT
+   Tài liệu đặc tả giao diện — designer bàn giao cho developer.
+   Nguồn thiết kế: ln-dev7/circle (Next.js + shadcn/ui, phong cách Linear).
+   Mọi giá trị trong tài liệu này là giá trị THẬT dùng để code: px + hex/rgba.
+   Phần "TOKENS" và "COMPONENT CSS" bên dưới chính là mã nguồn cần copy.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════ 1 · TOKENS · Color/Light — copy nguyên khối vào dự án ══════════════ */
+:root{
+  --bg:#F7F7F8;              /* oklch(.975 .001 286.375) */
+  --fg:#09090B;              /* zinc-950 */
+  --container:#FFFFFF;
+  --muted:#F4F4F5;           /* zinc-100 */
+  --muted-fg:#71717A;        /* zinc-500 */
+  --border:#E4E4E7;          /* zinc-200 */
+  --ring:#D4D4D8;            /* zinc-300 */
+  --sidebar:#F7F7F8;
+  --sidebar-accent:#F4F4F5;
+  --sidebar-border:#E4E4E7;
+  --track:#F0F0F2;
+  --field:#FFFFFF;
+
+  /* Color/Class — bảng trạng thái gốc của Circle */
+  --st-a:#4CB782;   /* A · HTXS ≥90   ← Shipped   */
+  --st-b:#5E6AD2;   /* B · HTT 75–<90 ← Done      */
+  --st-c:#F2C94C;   /* C · HT 60–<75  ← At risk   */
+  --st-d:#EB5757;   /* D · CHT <60    ← Off track */
+  --st-gray:#95A2B3;
+  --st-cyan:#26B5CE;
+  --st-orange:#F2790F;
+
+  /* Color/Class-ink — biến thể DÙNG CHO CHỮ (≥ 4,5:1 — đạt WCAG AA) */
+  --st-a-ink:#2E7D5B;   /* 5,00:1 */
+  --st-c-ink:#8A6D1F;   /* 4,90:1 */
+  --st-d-ink:#C0392F;   /* 5,43:1 */
+
+  /* Radius / Size */
+  --r-lg:10px; --r-md:8px; --r-sm:6px; --r-full:999px;
+  --h-header:40px; --w-sidebar:244px; --w-panel:328px; --pad-x:24px;
+}
+/* ══════════════ 2 · TOKENS · Color/Dark ══════════════ */
+[data-theme="dark"]{
+  --bg:#09090B;
+  --fg:#FAFAFA;
+  --container:#101011;
+  --muted:#27272A;           /* zinc-800 */
+  --muted-fg:#A1A1AA;        /* zinc-400 */
+  --border:#27272A;
+  --ring:#52525B;
+  --sidebar:#18181B;         /* zinc-900 */
+  --sidebar-accent:#27272A;
+  --sidebar-border:#27272A;
+  --track:#27272A;
+  --field:#18181B;
+  --st-a-ink:#5FD39A;   /* 10,21:1 trên #101011 */
+  --st-c-ink:#E7C158;   /* 11,02:1 */
+  --st-d-ink:#FF8080;   /*  7,83:1 */
+}
+
+/* ══════════════ 3 · RESET (giống hệt sản phẩm) ══════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:Geist,"Be Vietnam Pro",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--fg);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+:focus-visible{outline:2px solid var(--ring);outline-offset:1px;border-radius:6px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+.mono{font-family:"Geist Mono",ui-monospace,SFMono-Regular,monospace;font-feature-settings:"tnum" 1}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4 · CHROME CỦA TÀI LIỆU (không thuộc design system sản phẩm)
+   ══════════════════════════════════════════════════════════════════════════ */
+.doc{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+
+/* Mục lục */
+.toc{border-right:1px solid var(--border);background:var(--sidebar);position:sticky;top:0;height:100vh;overflow-y:auto;padding:20px 14px 40px}
+.toc-brand{padding:0 8px 14px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.toc-brand .t{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.toc-brand .s{font-size:11px;color:var(--muted-fg);margin-top:3px;line-height:1.4}
+.toc-g{margin-top:14px}
+.toc-g>.lb{font-size:10.5px;font-weight:600;color:var(--muted-fg);letter-spacing:.04em;text-transform:uppercase;padding:0 8px;margin-bottom:5px}
+.toc a{display:flex;gap:8px;align-items:baseline;padding:5px 8px;border-radius:var(--r-sm);font-size:12.5px;color:var(--muted-fg);line-height:1.35}
+.toc a:hover{background:var(--sidebar-accent);color:var(--fg)}
+.toc a.on{background:var(--sidebar-accent);color:var(--fg);font-weight:500}
+.toc a .no{font-size:10.5px;font-family:"Geist Mono",monospace;opacity:.75;flex:none;width:22px}
+.toc a.sub{padding-left:38px;font-size:12px}
+
+/* Thân tài liệu */
+.body{min-width:0;padding:0 0 80px}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--border);padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.top h1{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.top .meta{font-size:11.5px;color:var(--muted-fg);margin-top:2px}
+.top-r{display:flex;align-items:center;gap:8px;flex:none}
+.wrap{padding:0 40px;max-width:1200px}
+
+.sec{padding:34px 0 6px;scroll-margin-top:70px}
+.sec-h{display:flex;align-items:baseline;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.sec-h .no{font-family:"Geist Mono",monospace;font-size:12px;color:var(--muted-fg);flex:none}
+.sec-h h2{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.sub{padding:24px 0 4px;scroll-margin-top:70px}
+.sub-h{display:flex;align-items:baseline;gap:9px;margin-bottom:4px}
+.sub-h .no{font-family:"Geist Mono",monospace;font-size:11.5px;color:var(--muted-fg);flex:none}
+.sub-h h3{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+h4{font-size:12.5px;font-weight:600;margin:18px 0 7px}
+.lead{font-size:13px;color:var(--muted-fg);line-height:1.55;max-width:78ch;margin-bottom:14px}
+p.tx{font-size:12.5px;line-height:1.6;max-width:82ch;margin:9px 0}
+p.tx b,li b{font-weight:600}
+ul.tx{margin:9px 0 9px 18px;font-size:12.5px;line-height:1.65;max-width:82ch}
+ul.tx li{margin-bottom:3px}
+code{font-family:"Geist Mono",ui-monospace,monospace;font-size:11.5px;background:var(--muted);border:1px solid var(--border);border-radius:4px;padding:.5px 4px}
+.note{display:flex;gap:9px;padding:11px 13px;border:1px solid var(--border);border-radius:var(--r-lg);font-size:12px;line-height:1.55;margin:14px 0;max-width:88ch}
+.note .ic{flex:none;width:15px;height:15px;margin-top:1px}
+.note.warn{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.35)}
+.note.info{background:rgba(94,106,210,.06);border-color:rgba(94,106,210,.28)}
+.note.err{background:rgba(235,87,87,.07);border-color:rgba(235,87,87,.32)}
+.note.ok{background:rgba(76,183,130,.07);border-color:rgba(76,183,130,.32)}
+
+/* Bảng đặc tả */
+.t-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-lg);margin:12px 0}
+table.sp{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+table.sp th{text-align:left;font-size:10.5px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.03em;
+  padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--muted)}
+table.sp td{padding:8px 12px;border-bottom:1px solid rgba(113,113,122,.10);vertical-align:top;line-height:1.5}
+[data-theme="dark"] table.sp td{border-bottom-color:rgba(161,161,170,.10)}
+table.sp tr:last-child td{border-bottom:0}
+table.sp tr:hover td{background:rgba(113,113,122,.045)}
+table.sp td.mono,table.sp th.mono{font-family:"Geist Mono",monospace;font-feature-settings:"tnum" 1;white-space:nowrap}
+table.sp td.num,table.sp th.num{text-align:right;font-family:"Geist Mono",monospace;white-space:nowrap}
+table.sp .mut{color:var(--muted-fg)}
+.tok{display:inline-flex;align-items:center;gap:5px;font-family:"Geist Mono",monospace;font-size:11px;white-space:nowrap}
+.tok i{width:11px;height:11px;border-radius:3px;border:1px solid rgba(113,113,122,.35);flex:none;display:inline-block}
+
+/* Khối mã */
+pre.code{background:var(--muted);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;overflow-x:auto;
+  font-family:"Geist Mono",ui-monospace,monospace;font-size:11.5px;line-height:1.6;margin:12px 0;max-width:100%;white-space:pre}
+pre.code .c{color:var(--muted-fg)}
+pre.code .k{color:var(--st-b);font-weight:500}
+[data-theme="dark"] pre.code .k{color:#8E97E8}
+.code-lb{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 -4px}
+.code-lb .n{font-size:11px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.04em}
+
+/* Khối component: demo + đặc tả */
+.cmp{border:1px solid var(--border);border-radius:var(--r-lg);margin:16px 0;overflow:hidden;background:var(--container)}
+.cmp-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cmp-h .n{font-size:13px;font-weight:600}
+.cmp-h .n em{font-style:normal;color:var(--muted-fg);font-weight:400;font-size:12px;margin-left:8px}
+.cmp-h .tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:10.5px;font-family:"Geist Mono",monospace;border:1px solid var(--border);border-radius:var(--r-full);padding:1.5px 8px;color:var(--muted-fg);white-space:nowrap}
+.tag.b{border-color:rgba(94,106,210,.35);color:var(--st-b)}
+.cmp-demo{padding:18px 14px;background:
+  repeating-linear-gradient(45deg,transparent,transparent 7px,rgba(113,113,122,.045) 7px,rgba(113,113,122,.045) 14px)}
+.cmp-demo.plain{background:var(--container)}
+.cmp-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cmp-row+.cmp-row{margin-top:14px}
+.demo-lb{font-size:10.5px;font-weight:600;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
+.cmp-body{padding:0 14px 14px}
+.cmp-body>.t-wrap:first-child{margin-top:0}
+.cols2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+
+/* Bảng chú thích cấu tạo (anatomy) */
+.anat{display:grid;grid-template-columns:26px 1fr;gap:6px 10px;font-size:12px;line-height:1.5;margin:10px 0}
+.anat .i{width:19px;height:19px;border-radius:var(--r-full);background:var(--st-b);color:#fff;font-size:10px;font-weight:600;
+  display:grid;place-items:center;font-family:"Geist Mono",monospace}
+.anat .d b{font-weight:600}
+
+/* Swatch */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin:12px 0}
+.sw{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--container)}
+.sw .chip-c{height:52px;border-bottom:1px solid rgba(113,113,122,.14)}
+.sw .m{padding:7px 9px}
+.sw .n{font-size:11.5px;font-weight:500}
+.sw .h{font-size:10.5px;color:var(--muted-fg);margin-top:1px;font-family:"Geist Mono",monospace}
+.sw .u{font-size:10.5px;color:var(--muted-fg);margin-top:4px;line-height:1.4;border-top:1px dashed var(--border);padding-top:4px}
+
+/* Thước đo / khối kích thước */
+.spec{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;margin:12px 0}
+.spec .box{display:flex;flex-direction:column;gap:7px}
+.spec .cap{font-size:10.5px;color:var(--muted-fg);font-family:"Geist Mono",monospace}
+
+/* Sơ đồ khung màn hình */
+.blueprint{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--container);padding:16px;margin:14px 0;overflow-x:auto}
+.bp-scale{width:1440px;height:900px;transform:scale(.615);transform-origin:top left}
+.bp-clip{width:886px;height:554px;overflow:hidden}
+.bp{width:1440px;height:900px;display:flex;background:var(--bg);border:1px solid var(--border);position:relative;font-size:13px}
+.bp .z{position:relative;display:flex;align-items:center;justify-content:center;text-align:center}
+.bp .z .lb{font-size:21px;font-weight:600}
+.bp .z .px{font-size:17px;color:var(--muted-fg);font-family:"Geist Mono",monospace;margin-top:5px}
+.bp-side{width:244px;flex:none;background:var(--sidebar);border-right:1px dashed rgba(94,106,210,.5);flex-direction:column}
+.bp-shell{flex:1;min-width:0;padding:8px 8px 8px 0}
+.bp-frame{height:100%;background:var(--container);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden}
+.bp-h{height:40px;flex:none;border-bottom:1px solid var(--border);background:rgba(94,106,210,.07)}
+.bp-h2{height:40px;flex:none;border-bottom:1px solid var(--border);background:rgba(38,181,206,.07)}
+.bp-mid{flex:1;display:flex;min-height:0}
+.bp-main{flex:1;min-width:0;background:rgba(76,183,130,.05)}
+.bp-panel{width:328px;flex:none;border-left:1px solid var(--border);background:rgba(242,121,15,.06)}
+.bp-dim{position:absolute;font-family:"Geist Mono",monospace;font-size:17px;color:var(--st-b);background:var(--container);
+  border:1px solid rgba(94,106,210,.35);border-radius:5px;padding:2px 8px;z-index:3;white-space:nowrap}
+
+/* Bảng liệt kê cỡ chữ sống */
+.type-row{display:flex;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid rgba(113,113,122,.10)}
+[data-theme="dark"] .type-row{border-bottom-color:rgba(161,161,170,.10)}
+.type-row:last-child{border-bottom:0}
+.type-row .meta{width:210px;flex:none;font-size:11px;color:var(--muted-fg);font-family:"Geist Mono",monospace}
+.type-row .sample{min-width:0;flex:1}
+
+.badge-do,.badge-dont{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:var(--r-full);padding:1.5px 9px}
+.badge-do{color:var(--st-a-ink);background:rgba(76,183,130,.12)}
+.badge-dont{color:var(--st-d-ink);background:rgba(235,87,87,.10)}
+.dd{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:12px 0}
+.dd .p{border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px}
+.dd .p.ok{border-color:rgba(76,183,130,.4)}
+.dd .p.no{border-color:rgba(235,87,87,.35)}
+.dd .p .h{margin-bottom:9px}
+.dd .p .x{font-size:12px;line-height:1.55;color:var(--muted-fg);margin-top:9px}
+
+.foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted-fg);line-height:1.6}
+
+/* Nút chrome */
+.ubtn{height:28px;padding:0 11px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);
+  border-radius:var(--r-md);font-size:12px;font-weight:500;background:var(--container);white-space:nowrap}
+.ubtn:hover{background:var(--muted)}
+.ubtn svg{width:14px;height:14px}
+
+@media (max-width:1080px){
+  .doc{grid-template-columns:1fr}
+  .toc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--border)}
+  .wrap,.top{padding-left:20px;padding-right:20px}
+}
+@media print{
+  .toc,.top-r{display:none}
+  .doc{display:block}
+  .top{position:static}
+  .sec{break-inside:auto;page-break-inside:auto}
+  .cmp,.t-wrap,pre.code{break-inside:avoid}
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5 · COMPONENT CSS — ĐÂY LÀ ĐẶC TẢ THẬT.
+   Toàn bộ khối dưới đây copy nguyên văn từ sản phẩm; mọi demo trong tài liệu
+   render bằng chính CSS này nên cái bạn thấy = cái bạn code.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Layout/Sidebar */
+.sidebar{width:var(--w-sidebar);flex:none;background:var(--sidebar);display:flex;flex-direction:column;height:100%}
+.sb-header{padding:8px}
+.org{display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 8px;border-radius:var(--r-md);text-align:left}
+.org:hover{background:var(--sidebar-accent)}
+.org-avatar{width:26px;height:26px;flex:none;border-radius:var(--r-sm);background:#C8102E;color:#F5C518;display:grid;place-items:center;font-size:11px;font-weight:700}
+.org-txt{flex:1;min-width:0}
+.org-txt span{display:block}
+.org-txt .n{font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-txt .s{font-size:11px;color:var(--muted-fg);line-height:1.3}
+.sb-label{height:28px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:500;color:var(--muted-fg)}
+.sb-item{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:var(--r-md);font-size:13px;width:100%;text-align:left}
+.sb-item:hover{background:var(--sidebar-accent)}
+.sb-item.active{background:var(--sidebar-accent);font-weight:500}
+.sb-item svg{width:16px;height:16px;flex:none;opacity:.75}
+.sb-item .lbl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-item .cnt{font-size:11px;color:var(--muted-fg)}
+.sb-item .badge{font-size:10px;font-weight:600;background:var(--st-d);color:#fff;border-radius:var(--r-full);padding:1px 6px;line-height:1.5}
+.dot{width:8px;height:8px;border-radius:var(--r-full);flex:none}
+.dot-sm{width:6px;height:6px;border-radius:var(--r-full);flex:none;display:inline-block}
+.sb-card{border:1px solid var(--sidebar-border);border-radius:var(--r-lg);padding:12px;background:var(--container)}
+.sb-card .t{font-size:12.5px;font-weight:600;line-height:1.3}
+.sb-card .d{font-size:11.5px;color:var(--muted-fg);margin-top:4px;line-height:1.4}
+.sb-card .bar{height:4px;border-radius:2px;background:var(--track);margin-top:10px;overflow:hidden}
+.sb-card .bar i{display:block;height:100%;background:var(--st-b);border-radius:2px}
+
+/* Button/Icon */
+.icon-btn{width:28px;height:28px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--muted-fg);flex:none}
+.icon-btn:hover{background:var(--sidebar-accent);color:var(--fg)}
+.icon-btn svg{width:16px;height:16px}
+
+/* Header/Primary + Header/FilterBar */
+.crumb{font-size:13px;font-weight:600;white-space:nowrap}
+.crumb .sep{color:var(--muted-fg);font-weight:400;margin:0 6px}
+.crumb .sb{color:var(--muted-fg);font-weight:400}
+.tab{height:28px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-full);border:1px solid transparent;font-size:12px;font-weight:500;color:var(--muted-fg);white-space:nowrap}
+.tab:hover{background:var(--muted);color:var(--fg)}
+.tab.active{background:var(--muted);color:var(--fg);border-color:var(--border)}
+.tab .n{font-size:11px;opacity:.7}
+.search{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-md);color:var(--muted-fg);font-size:12px;min-width:190px;background:var(--field)}
+.search svg{width:14px;height:14px;flex:none}
+.kbd{margin-left:auto;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:0 4px;line-height:15px}
+.avatar{width:24px;height:24px;border-radius:var(--r-full);background:var(--st-b);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:600;flex:none}
+.chip{height:26px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12px;white-space:nowrap;flex:none}
+.chip:hover{background:var(--muted)}
+.chip .k{color:var(--muted-fg)}
+.chip svg{width:12px;height:12px;opacity:.6;flex:none}
+.chip.ghost{border-style:dashed;color:var(--muted-fg)}
+.chip.primary{background:var(--st-b);border-color:var(--st-b);color:#fff}
+.chip.primary:hover{background:#4F5AC4}
+.stamp{font-size:11.5px;color:var(--muted-fg);display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+/* Data/StatStrip */
+.stats{display:grid;gap:0;border-bottom:1px solid var(--border)}
+.stats.c4{grid-template-columns:repeat(4,1fr)}
+.stats.c3{grid-template-columns:repeat(3,1fr)}
+.stats.c2{grid-template-columns:repeat(2,1fr)}
+.stat{padding:16px var(--pad-x);border-right:1px solid var(--border);min-width:0}
+.stat:last-child{border-right:0}
+.stat .lbl{font-size:11px;font-weight:500;color:var(--muted-fg);display:flex;align-items:center;gap:6px}
+.stat .lbl svg{width:13px;height:13px;opacity:.7;flex:none}
+.stat .val{display:flex;align-items:baseline;gap:6px;margin-top:8px;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1;flex-wrap:wrap}
+.stat .val>span{white-space:nowrap}
+.stat .val small{font-size:12px;font-weight:400;color:var(--muted-fg)}
+.stat .delta{font-size:11.5px;font-weight:500;margin-left:auto;white-space:nowrap}
+.up{color:var(--st-a-ink)} .down{color:var(--st-d-ink)} .flat{color:var(--muted-fg)}
+.segbar{display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--track);margin-top:12px}
+.segbar i{display:block;height:100%}
+.legend{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.legend span{font-size:11px;color:var(--muted-fg);display:inline-flex;align-items:center;gap:5px}
+.legend b{color:var(--fg);font-weight:500}
+.stat .s{font-size:11.5px;color:var(--muted-fg);margin-top:9px}
+
+/* List/SectionHeader */
+.list-head{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);border-bottom:1px solid var(--border);background:var(--container)}
+.list-head .t{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.list-head .t .n{font-weight:400;color:var(--muted-fg)}
+.list-head .r{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted-fg)}
+
+/* List/GroupHeader — nền tint = màu loại @8% */
+.grp-head{height:var(--h-header);display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);background:var(--container)}
+.grp-head .l{display:flex;align-items:center;gap:8px;min-width:0}
+.grp-head .nm{font-size:13px;font-weight:500}
+.grp-head .ct{font-size:13px;color:var(--muted-fg)}
+.grp-head .rule{font-size:11px;color:var(--muted-fg);white-space:nowrap}
+.tint-a{background:rgba(76,183,130,.08)}
+.tint-b{background:rgba(94,106,210,.08)}
+.tint-c{background:rgba(242,201,76,.10)}
+.tint-d{background:rgba(235,87,87,.08)}
+.tint-gray{background:rgba(149,162,179,.08)}
+.tint-cyan{background:rgba(38,181,206,.08)}
+.tint-orange{background:rgba(242,121,15,.08)}
+
+/* List/Row */
+.row{display:flex;align-items:center;gap:8px;padding:11px var(--pad-x);border-bottom:1px solid rgba(113,113,122,.10);font-size:13px}
+[data-theme="dark"] .row{border-bottom-color:rgba(161,161,170,.10)}
+.row:hover{background:rgba(113,113,122,.05)}
+.row-main{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.rank{width:24px;height:24px;flex:none;border-radius:var(--r-sm);background:var(--muted);display:grid;place-items:center;font-size:11px;font-weight:500}
+.unit{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit:hover{text-decoration:underline;text-underline-offset:2px}
+.col{flex:none;text-align:right}
+.c-lay{width:44px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-tot{width:54px;font-weight:600}
+.c-trk{width:112px;display:flex;align-items:center;gap:8px}
+.c-cls{width:88px;display:flex;justify-content:flex-start}
+.c-dt{width:46px;font-size:11.5px;font-weight:500}
+
+/* Data/Pill */
+.pill{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:11px;border:1px solid var(--border);border-radius:var(--r-full);padding:1px 7px;color:var(--muted-fg);white-space:nowrap}
+.pill.danger{color:var(--st-d-ink);border-color:rgba(235,87,87,.35)}
+.pill.warn{color:var(--st-c-ink);border-color:rgba(242,201,76,.45)}
+.pill.ok{color:var(--st-a-ink);border-color:rgba(76,183,130,.35)}
+.pill.solid{border:0;padding:2px 8px;font-weight:500}
+
+/* Data/ProgressTrack */
+.trk{flex:1;height:5px;border-radius:3px;background:var(--track);position:relative}
+.trk i{display:block;height:100%;border-radius:3px}
+.trk::after{content:"";position:absolute;left:75%;top:-4px;bottom:-4px;width:1.5px;background:var(--muted-fg);opacity:.85;border-radius:1px}
+.trk.no-mark::after{display:none}
+.trk-v{font-size:11px;color:var(--muted-fg);width:34px;text-align:right;flex:none}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
+
+/* Panel/Insights */
+.pn-head{height:var(--h-header);display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--container)}
+.pn-head .t{font-size:13px;font-weight:600}
+.pn-sec{padding:12px 16px 16px}
+.pn-lbl{font-size:11px;font-weight:500;color:var(--muted-fg);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px}
+.pn-div{height:1px;background:var(--border)}
+.gp{display:block;width:100%;text-align:left;padding:8px;border-radius:var(--r-md)}
+.gp:hover{background:var(--muted)}
+.gp-top{display:flex;align-items:center;gap:8px}
+.gp-id{width:18px;height:18px;flex:none;border-radius:5px;background:var(--muted);display:grid;place-items:center;font-size:10px;font-weight:600}
+.gp-nm{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gp-v{font-size:12px;font-weight:600;flex:none}
+.gp-bot{display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:26px}
+.gp-trk{flex:1;height:4px;border-radius:2px;background:var(--track);position:relative}
+.gp-trk i{display:block;height:100%;border-radius:2px}
+.gp-trk::after{content:"";position:absolute;left:75%;top:-3px;bottom:-3px;width:1.5px;background:var(--muted-fg);opacity:.8;border-radius:1px}
+.gp-ct{font-size:10.5px;color:var(--muted-fg);width:40px;text-align:right;flex:none}
+
+/* Panel/AlertItem */
+.al{display:flex;gap:8px;padding:9px 8px;border-radius:var(--r-md);width:100%;text-align:left}
+.al:hover{background:var(--muted)}
+.al-ic{width:16px;flex:none;display:flex;justify-content:center;padding-top:3px}
+.al-b{flex:1;min-width:0}
+.al-t{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.al-code{font-size:11px;font-weight:600}
+.al-lv{font-size:9.5px;font-weight:600;border-radius:4px;padding:1px 5px;border:1px solid var(--border);color:var(--muted-fg)}
+.al-lv.hi{color:var(--st-d);border-color:rgba(235,87,87,.35)}
+.al-d{display:block;font-size:11.5px;color:var(--muted-fg);margin-top:3px;line-height:1.35}
+.al-o{display:block;font-size:11px;color:var(--muted-fg);margin-top:4px;opacity:.85}
+
+/* Panel/KeyValue */
+.kv{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;font-size:12px}
+.kv .k{color:var(--muted-fg);flex:none}
+.kv .v{text-align:right;font-weight:500}
+
+/* Form */
+.form-sec{padding:16px var(--pad-x);border-bottom:1px solid var(--border)}
+.form-sec .h{font-size:13px;font-weight:600;margin-bottom:2px}
+.form-sec .hint{font-size:11.5px;color:var(--muted-fg);margin-bottom:14px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
+.fgrid.c1{grid-template-columns:1fr}
+.fgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--muted-fg);margin-bottom:5px}
+.field .req{color:var(--st-d)}
+.input,.textarea,.select{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--field);font-size:13px;outline:none}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--ring)}
+.textarea{height:auto;min-height:64px;padding:8px 10px;line-height:1.5;resize:vertical}
+.input:disabled,.input.locked{background:var(--muted);color:var(--muted-fg);cursor:not-allowed}
+.field .help{font-size:11px;color:var(--muted-fg);margin-top:5px}
+.field .help.err{color:var(--st-d)}
+.field .help.ok{color:var(--st-a)}
+.inline-unit{position:relative}
+.inline-unit .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11.5px;color:var(--muted-fg);pointer-events:none}
+
+/* Button */
+.btn{height:30px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12.5px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--muted)}
+.btn svg{width:14px;height:14px;flex:none}
+.btn.primary{background:var(--st-b);border-color:var(--st-b);color:#fff}
+.btn.primary:hover{background:#4F5AC4}
+.btn.danger{color:var(--st-d);border-color:rgba(235,87,87,.35)}
+.btn.ghost{border-color:transparent}
+.btn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* Dropzone */
+.dropzone{border:1.5px dashed var(--border);border-radius:var(--r-lg);padding:22px;text-align:center;color:var(--muted-fg);font-size:12.5px}
+.dropzone b{display:block;color:var(--fg);font-size:13px;font-weight:600;margin-bottom:4px}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:11px;font-weight:500;color:var(--muted-fg);padding:8px var(--pad-x);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--container)}
+.tbl td{padding:9px var(--pad-x);border-bottom:1px solid rgba(113,113,122,.10);vertical-align:top}
+[data-theme="dark"] .tbl td{border-bottom-color:rgba(161,161,170,.10)}
+.tbl tr:hover td{background:rgba(113,113,122,.05)}
+.tbl td.num,.tbl th.num{text-align:right}
+.tbl .muted{color:var(--muted-fg)}
+
+/* Card */
+.cards{display:grid;gap:12px}
+.cards.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cards.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;background:var(--container)}
+.card .ct{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card .cd{font-size:11.5px;color:var(--muted-fg);margin-top:5px;line-height:1.45}
+.card .cv{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-top:10px}
+
+/* Callout */
+.callout{display:flex;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-lg);font-size:12.5px;line-height:1.5}
+.callout .ci{flex:none;padding-top:1px}
+.callout b{font-weight:600}
+.callout.warn{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.35)}
+.callout.info{background:rgba(94,106,210,.06);border-color:rgba(94,106,210,.28)}
+.callout.err{background:rgba(235,87,87,.07);border-color:rgba(235,87,87,.32)}
+
+/* Stepper */
+.stepper{display:flex;gap:0}
+.step{flex:1;min-width:0;position:relative;padding-right:12px}
+.step .sd{width:18px;height:18px;border-radius:var(--r-full);border:2px solid var(--border);background:var(--container);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--muted-fg)}
+.step.done .sd{background:var(--st-a);border-color:var(--st-a);color:#fff}
+.step.current .sd{border-color:var(--st-b);color:var(--st-b)}
+.step .sl{height:2px;background:var(--border);position:absolute;left:18px;right:0;top:8px}
+.step.done .sl{background:var(--st-a)}
+.step:last-child .sl{display:none}
+.step .sn{font-size:12px;font-weight:500;margin-top:8px}
+.step .ss{font-size:11px;color:var(--muted-fg);margin-top:2px;line-height:1.4}
+
+/* Timeline */
+.tl-item{display:flex;gap:12px;padding:9px 0}
+.tl-rail{width:18px;flex:none;display:flex;flex-direction:column;align-items:center}
+.tl-rail .d{width:9px;height:9px;border-radius:var(--r-full);flex:none;margin-top:5px}
+.tl-rail .l{flex:1;width:1.5px;background:var(--border);margin-top:4px}
+.tl-b{flex:1;min-width:0}
+.tl-t{font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl-m{font-size:11.5px;color:var(--muted-fg);margin-top:3px;line-height:1.45}
+
+/* Heatmap */
+.heat{border-collapse:separate;border-spacing:3px;font-size:11px}
+.heat th{font-weight:500;color:var(--muted-fg);font-size:10.5px;padding:0 2px}
+.heat th.rowh{text-align:left;font-size:12px;color:var(--fg);font-weight:400;padding-right:10px;white-space:nowrap}
+.heat th.colh{writing-mode:vertical-rl;transform:rotate(180deg);height:78px;white-space:nowrap;font-size:10.5px}
+.heat td{width:26px;height:26px;border-radius:var(--r-sm);text-align:center;color:#fff;font-size:10px;font-weight:600}
+
+/* Chart/GroupResults */
+.gchart{position:relative;display:grid;grid-template-columns:248px minmax(0,1fr) 96px;align-items:center;gap:9px 14px}
+.gc-lines{position:absolute;pointer-events:none;z-index:2}
+.gc-lines i{position:absolute;top:0;bottom:0;width:1px;background:var(--fg);opacity:.13}
+.gc-lines i.t{width:0;background:none;border-left:1.5px dashed var(--muted-fg);opacity:.8}
+.gc-lbl{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px}
+.gc-num{width:18px;height:18px;flex:none;border-radius:5px;background:var(--muted);display:grid;place-items:center;font-size:10px;font-weight:600}
+.gc-nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc-bar{height:10px;border-radius:5px;background:var(--track);position:relative}
+.gc-bar i{display:block;height:100%;border-radius:5px}
+.gc-end{display:flex;align-items:baseline;justify-content:flex-end;gap:8px}
+.gc-end b{font-size:12.5px;font-weight:600}
+.gc-ct{font-size:11px;color:var(--muted-fg)}
+.gc-axis{position:relative;height:15px;margin-top:3px}
+.gc-axis span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:var(--muted-fg)}
+.gc-axis span:first-child{transform:none}
+.gc-axis span:last-child{transform:translateX(-100%)}
+
+/* List/ThresholdRule */
+.thr{display:flex;align-items:center;gap:12px;padding:7px var(--pad-x);background:var(--container)}
+.thr-l{flex:1;height:0;border-top:1px dashed var(--border)}
+.thr-t{font-size:11px;color:var(--muted-fg);white-space:nowrap}
+.thr-t b{color:var(--fg);font-weight:600}
+
+/* Chart phụ trợ */
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap}
+.chart-legend span{font-size:11.5px;color:var(--muted-fg);display:inline-flex;align-items:center;gap:6px}
+.lg-line{width:16px;height:2px;border-radius:1px;display:inline-block}
+.foot-note{font-size:11px;color:var(--muted-fg);display:flex;gap:20px;flex-wrap:wrap}
+.foot-note b{color:var(--fg);font-weight:500}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- ═══════════════════ MỤC LỤC ═══════════════════ -->
+<nav class="toc" id="toc">
+  <div class="toc-brand">
+    <div class="t">NQ57 · Design System</div>
+    <div class="s">Blueprint bàn giao Design → Dev<br>v1.0 · khổ thiết kế 1440×900</div>
+  </div>
+
+  <a href="#s0" class="on"><span class="no">00</span><span>Cách đọc tài liệu</span></a>
+
+  <div class="toc-g">
+    <div class="lb">Nền tảng</div>
+    <a href="#s1"><span class="no">01</span><span>Foundations</span></a>
+    <a href="#s1-1" class="sub">Màu nền &amp; chữ</a>
+    <a href="#s1-2" class="sub">Màu xếp loại</a>
+    <a href="#s1-3" class="sub">Màu chữ có trạng thái</a>
+    <a href="#s1-4" class="sub">Typography</a>
+    <a href="#s1-5" class="sub">Radius · Spacing · Size</a>
+    <a href="#s1-6" class="sub">Đường viền · Focus</a>
+    <a href="#s1-7" class="sub">Icon</a>
+  </div>
+
+  <div class="toc-g">
+    <div class="lb">Bố cục</div>
+    <a href="#s2"><span class="no">02</span><span>Grid &amp; Layout</span></a>
+    <a href="#s2-1" class="sub">Khung ứng dụng</a>
+    <a href="#s2-2" class="sub">Nhịp dọc &amp; chiều cao</a>
+    <a href="#s2-3" class="sub">Lưới cột của hàng dữ liệu</a>
+    <a href="#s2-4" class="sub">Lưới thẻ &amp; biểu mẫu</a>
+    <a href="#s2-5" class="sub">Lưới biểu đồ</a>
+    <a href="#s2-6" class="sub">Breakpoint &amp; sticky</a>
+  </div>
+
+  <div class="toc-g">
+    <div class="lb">Thư viện</div>
+    <a href="#s3"><span class="no">03</span><span>Component · Base</span></a>
+    <a href="#s4"><span class="no">04</span><span>Component · Composite</span></a>
+    <a href="#s5"><span class="no">05</span><span>Biểu đồ &amp; dữ liệu</span></a>
+  </div>
+
+  <div class="toc-g">
+    <div class="lb">Quy tắc</div>
+    <a href="#s6"><span class="no">06</span><span>Trạng thái &amp; tương tác</span></a>
+    <a href="#s7"><span class="no">07</span><span>Tiếp cận (a11y)</span></a>
+    <a href="#s8"><span class="no">08</span><span>Bàn giao cho dev</span></a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ THÂN ═══════════════════ -->
+<main class="body">
+  <div class="top">
+    <div>
+      <h1>Design System Blueprint — Bộ chỉ số NQ 57</h1>
+      <div class="meta">Đặc tả giao diện để lập trình · nguồn thiết kế <span class="mono">ln-dev7/circle</span> · đơn vị <span class="mono">px</span> · màu <span class="mono">hex / rgba</span></div>
+    </div>
+    <div class="top-r">
+      <button class="ubtn" id="themeBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        Sáng / Tối
+      </button>
+      <button class="ubtn" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        In / PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+  <!-- ═════════ 00 · CÁCH ĐỌC ═════════ -->
+  <section class="sec" id="s0">
+    <div class="sec-h"><span class="no">00</span><h2>Cách đọc tài liệu</h2></div>
+    <p class="lead">Đây là bản đặc tả để <b>code trực tiếp</b>, không phải bản mô tả cảm hứng. Mọi con số ở đây là giá trị cuối cùng: kích thước tính bằng <code>px</code>, màu ghi bằng <code>hex</code> hoặc <code>rgba()</code>, không dùng <code>rem</code>, <code>oklch()</code> hay <code>color-mix()</code>. Khối CSS in trong tài liệu là mã chạy thật — chính nó đang render các demo bạn thấy bên dưới.</p>
+
+    <h4>Quy ước ký hiệu</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th style="width:170px">Ký hiệu</th><th>Nghĩa</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tok"><i style="background:var(--st-b)"></i>--st-b</span></td><td>Biến CSS trong <code>:root</code>. Dùng đúng tên này khi code, không viết thẳng mã màu.</td></tr>
+          <tr><td class="mono">Data/Pill</td><td>Tên component trong Figma — trùng với thuộc tính <code>data-fig</code> trong HTML sản phẩm. Tra ngược bằng Inspect của trình duyệt.</td></tr>
+          <tr><td class="mono">.pill</td><td>Tên class CSS thật để lập trình viên bám vào.</td></tr>
+          <tr><td class="num">11.5px</td><td>Giá trị đo được, đã tính cả nửa pixel. Không làm tròn khi code — hệ thống mật độ cao nên 0,5 px có ảnh hưởng thấy được.</td></tr>
+          <tr><td><span class="badge-do">NÊN</span> / <span class="badge-dont">KHÔNG</span></td><td>Quy tắc bắt buộc, không phải gợi ý. Vi phạm sẽ phá vỡ tính nhất quán hoặc mức tương phản.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Bảy nguyên tắc chi phối toàn hệ thống</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th style="width:34px" class="num">#</th><th style="width:230px">Nguyên tắc</th><th>Hệ quả khi code</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td><b>Màu chỉ mang thông tin ở chấm tròn, icon và thanh bar</b></td><td>Chữ luôn là <code>--fg</code> hoặc <code>--muted-fg</code>. Khi buộc phải tô chữ theo trạng thái thì dùng bộ <code>--st-*-ink</code> chứ không dùng màu mark.</td></tr>
+          <tr><td class="num">2</td><td><b>Mọi con số dùng font mono</b></td><td>Thêm class <code>.mono</code> cho điểm số, phần trăm, mã KPI, ngày giờ. Đã bật <code>font-feature-settings:"tnum" 1</code> để cột số thẳng hàng.</td></tr>
+          <tr><td class="num">3</td><td><b>Phân tách bằng đường viền, không dùng đổ bóng</b></td><td>Toàn hệ thống không có <code>box-shadow</code>. Lớp nổi (panel, card) phân biệt bằng <code>--border</code> 1px và nền <code>--container</code>.</td></tr>
+          <tr><td class="num">4</td><td><b>Mật độ cao kiểu Linear</b></td><td>Header 40px, hàng danh sách 38–40px, nút 30px, ô nhập 32px. Không nới cao lên cho "thoáng" — bảng 13 dòng phải nằm gọn trong 900px.</td></tr>
+          <tr><td class="num">5</td><td><b>1px HTML = 1px thiết kế</b></td><td>Không dùng <code>rem</code>, không scale theo font gốc trình duyệt. Khổ chuẩn 1440×900.</td></tr>
+          <tr><td class="num">6</td><td><b>Sáng và tối dùng chung tên biến</b></td><td>Chỉ đổi giá trị trong <code>[data-theme="dark"]</code>. Không viết class riêng cho dark mode ở tầng component.</td></tr>
+          <tr><td class="num">7</td><td><b>Nền tint = màu trạng thái ở 8%</b></td><td>Viết thẳng <code>rgba()</code> đã tính sẵn (xem §1.2), không sinh động bằng hàm màu — để Figma và trình duyệt cũ đọc đúng.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note info">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-b)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span>
+      <div><b>Phạm vi tài liệu</b> — chỉ nói về giao diện: token, lưới, component, trạng thái, khả năng tiếp cận. Luồng nghiệp vụ, công thức tính điểm và từ điển dữ liệu nằm ở đặc tả nghiệp vụ riêng; ở đây chỉ trích khi nó quyết định cách hiển thị (ví dụ ngưỡng 75% vẽ thành vạch mốc trên thanh tiến độ).</div>
+    </div>
+  </section>
+
+  <!-- ═════════ 01 · FOUNDATIONS ═════════ -->
+  <section class="sec" id="s1">
+    <div class="sec-h"><span class="no">01</span><h2>Foundations</h2></div>
+    <p class="lead">Bốn nhóm token: <b>màu bề mặt</b> (đổi theo sáng/tối), <b>màu xếp loại</b> (giữ nguyên ở cả hai chế độ), <b>màu chữ có trạng thái</b> và <b>số đo</b> (radius, spacing, size). Tất cả khai báo trong <code>:root</code>, không có token nào sinh ra ở tầng component.</p>
+
+    <!-- 1.1 -->
+    <div class="sub" id="s1-1">
+      <div class="sub-h"><span class="no">1.1</span><h3>Màu bề mặt và màu chữ</h3></div>
+      <p class="tx">Thang xám trùng khít <b>Tailwind zinc</b>. Nếu dự án đã có Tailwind, map thẳng sang tên zinc để đỡ phát sinh bảng màu thứ hai.</p>
+
+      <div class="demo-lb" style="margin-top:16px">Light</div>
+      <div class="swatches">
+        <div class="sw"><div class="chip-c" style="background:#F7F7F8"></div><div class="m"><div class="n">background</div><div class="h">#F7F7F8 · zinc-50+</div><div class="u">Nền ngoài cùng, nền sidebar</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#FFFFFF"></div><div class="m"><div class="n">container</div><div class="h">#FFFFFF</div><div class="u">Nền khung nội dung, card, panel</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#F4F4F5"></div><div class="m"><div class="n">muted / accent</div><div class="h">#F4F4F5 · zinc-100</div><div class="u">Nền hover, nền tab active, nền ô khoá</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#E4E4E7"></div><div class="m"><div class="n">border</div><div class="h">#E4E4E7 · zinc-200</div><div class="u">Mọi đường viền 1px</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#D4D4D8"></div><div class="m"><div class="n">ring</div><div class="h">#D4D4D8 · zinc-300</div><div class="u">Viền focus, viền ô nhập khi focus</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#F0F0F2"></div><div class="m"><div class="n">track</div><div class="h">#F0F0F2</div><div class="u">Rãnh nền của mọi thanh tiến độ</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#71717A"></div><div class="m"><div class="n">muted-foreground</div><div class="h">#71717A · zinc-500</div><div class="u">Chữ phụ, nhãn, đơn vị đo</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#09090B"></div><div class="m"><div class="n">foreground</div><div class="h">#09090B · zinc-950</div><div class="u">Chữ chính</div></div></div>
+      </div>
+
+      <div class="demo-lb" style="margin-top:18px">Dark</div>
+      <div class="swatches">
+        <div class="sw"><div class="chip-c" style="background:#09090B"></div><div class="m"><div class="n">background</div><div class="h">#09090B · zinc-950</div><div class="u">Nền ngoài cùng</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#101011"></div><div class="m"><div class="n">container</div><div class="h">#101011</div><div class="u">Nền khung nội dung</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#27272A"></div><div class="m"><div class="n">muted / border</div><div class="h">#27272A · zinc-800</div><div class="u">Nền hover <i>và</i> đường viền dùng chung một giá trị</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#52525B"></div><div class="m"><div class="n">ring</div><div class="h">#52525B · zinc-600</div><div class="u">Viền focus</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#18181B"></div><div class="m"><div class="n">sidebar / field</div><div class="h">#18181B · zinc-900</div><div class="u">Nền sidebar, nền ô nhập</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#A1A1AA"></div><div class="m"><div class="n">muted-foreground</div><div class="h">#A1A1AA · zinc-400</div><div class="u">Chữ phụ</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#FAFAFA"></div><div class="m"><div class="n">foreground</div><div class="h">#FAFAFA · zinc-50</div><div class="u">Chữ chính</div></div></div>
+      </div>
+
+      <h4>Bảng token đầy đủ</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Biến CSS</th><th>Tên Figma</th><th class="mono">Light</th><th class="mono">Dark</th><th>Dùng ở đâu</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">--bg</td><td class="mono">surface/background</td><td class="mono">#F7F7F8</td><td class="mono">#09090B</td><td>Nền <code>body</code>, nền vùng ngoài khung nội dung</td></tr>
+            <tr><td class="mono">--container</td><td class="mono">surface/container</td><td class="mono">#FFFFFF</td><td class="mono">#101011</td><td>Khung nội dung, card, panel, header dính</td></tr>
+            <tr><td class="mono">--fg</td><td class="mono">surface/foreground</td><td class="mono">#09090B</td><td class="mono">#FAFAFA</td><td>Chữ chính, số liệu, tiêu đề</td></tr>
+            <tr><td class="mono">--muted</td><td class="mono">surface/muted</td><td class="mono">#F4F4F5</td><td class="mono">#27272A</td><td>Nền hover, tab active, ô nhập bị khoá, ô số thứ tự</td></tr>
+            <tr><td class="mono">--muted-fg</td><td class="mono">surface/muted-foreground</td><td class="mono">#71717A</td><td class="mono">#A1A1AA</td><td>Nhãn, chữ phụ, đơn vị, chú thích, icon phụ</td></tr>
+            <tr><td class="mono">--border</td><td class="mono">surface/border</td><td class="mono">#E4E4E7</td><td class="mono">#27272A</td><td>Toàn bộ đường viền 1px và đường kẻ chia</td></tr>
+            <tr><td class="mono">--ring</td><td class="mono">surface/ring</td><td class="mono">#D4D4D8</td><td class="mono">#52525B</td><td><code>:focus-visible</code>, viền ô nhập khi focus</td></tr>
+            <tr><td class="mono">--sidebar</td><td class="mono">surface/sidebar</td><td class="mono">#F7F7F8</td><td class="mono">#18181B</td><td>Nền thanh điều hướng trái</td></tr>
+            <tr><td class="mono">--sidebar-accent</td><td class="mono">surface/sidebar-accent</td><td class="mono">#F4F4F5</td><td class="mono">#27272A</td><td>Hover và trạng thái active của mục điều hướng</td></tr>
+            <tr><td class="mono">--sidebar-border</td><td class="mono">surface/sidebar-border</td><td class="mono">#E4E4E7</td><td class="mono">#27272A</td><td>Viền thẻ trong sidebar</td></tr>
+            <tr><td class="mono">--track</td><td class="mono">surface/track</td><td class="mono">#F0F0F2</td><td class="mono">#27272A</td><td>Rãnh nền thanh tiến độ (khác <code>--muted</code> một bậc ở light)</td></tr>
+            <tr><td class="mono">--field</td><td class="mono">surface/field</td><td class="mono">#FFFFFF</td><td class="mono">#18181B</td><td>Nền ô nhập, ô tìm kiếm</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-c-ink)" stroke-width="1.8" stroke-linecap="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+        <div>Ở dark mode, <code>--muted</code> và <code>--border</code> <b>trùng giá trị</b> <span class="mono">#27272A</span>. Đây là chủ ý của Circle, không phải lỗi copy. Đừng "sửa cho khác nhau" — nền hover khi đó sẽ nổi hơn mức cần thiết.</div>
+      </div>
+    </div>
+
+    <!-- 1.2 -->
+    <div class="sub" id="s1-2">
+      <div class="sub-h"><span class="no">1.2</span><h3>Màu xếp loại và màu lớp chỉ số</h3></div>
+      <p class="tx">Bảy màu lấy nguyên bảng trạng thái của Circle. <b>Giống hệt nhau ở light và dark</b> — không đảo giá trị theo chế độ.</p>
+
+      <div class="swatches">
+        <div class="sw"><div class="chip-c" style="background:#4CB782"></div><div class="m"><div class="n">class/A · HTXS</div><div class="h">#4CB782 · --st-a</div><div class="u">≥ 90 điểm · gốc Circle: Shipped</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#5E6AD2"></div><div class="m"><div class="n">class/B · HTT</div><div class="h">#5E6AD2 · --st-b</div><div class="u">75 – &lt;90 · Done · cũng là màu primary</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#F2C94C"></div><div class="m"><div class="n">class/C · HT</div><div class="h">#F2C94C · --st-c</div><div class="u">60 – &lt;75 · At risk</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#EB5757"></div><div class="m"><div class="n">class/D · CHT</div><div class="h">#EB5757 · --st-d</div><div class="u">&lt; 60 · Off track</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#26B5CE"></div><div class="m"><div class="n">layer/B</div><div class="h">#26B5CE · --st-cyan</div><div class="u">Lớp chỉ số B · Paused</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#F2790F"></div><div class="m"><div class="n">layer/C</div><div class="h">#F2790F · --st-orange</div><div class="u">Lớp chỉ số C · Triage</div></div></div>
+        <div class="sw"><div class="chip-c" style="background:#95A2B3"></div><div class="m"><div class="n">neutral</div><div class="h">#95A2B3 · --st-gray</div><div class="u">Chưa nhập, không xếp hạng · Backlog</div></div></div>
+      </div>
+
+      <h4>Nền tint — giá trị đã tính sẵn</h4>
+      <p class="tx">Header nhóm và callout dùng chính màu trạng thái ở độ mờ 8% (riêng vàng 10% vì nó nhạt hơn). Viết thẳng <code>rgba()</code>, <b>không</b> dùng <code>color-mix()</code>.</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Class</th><th>Giá trị</th><th>Xem thử</th><th>Dùng ở</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">.tint-a</td><td class="mono">rgba(76,183,130,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(76,183,130,.08);border:1px solid var(--border)"></span></td><td>Header nhóm xếp loại A</td></tr>
+            <tr><td class="mono">.tint-b</td><td class="mono">rgba(94,106,210,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(94,106,210,.08);border:1px solid var(--border)"></span></td><td>Header nhóm B · callout info</td></tr>
+            <tr><td class="mono">.tint-c</td><td class="mono">rgba(242,201,76,.10)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(242,201,76,.10);border:1px solid var(--border)"></span></td><td>Header nhóm C · callout cảnh báo</td></tr>
+            <tr><td class="mono">.tint-d</td><td class="mono">rgba(235,87,87,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(235,87,87,.08);border:1px solid var(--border)"></span></td><td>Header nhóm D · callout lỗi</td></tr>
+            <tr><td class="mono">.tint-gray</td><td class="mono">rgba(149,162,179,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(149,162,179,.08);border:1px solid var(--border)"></span></td><td>Nhóm trung tính</td></tr>
+            <tr><td class="mono">.tint-cyan</td><td class="mono">rgba(38,181,206,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(38,181,206,.08);border:1px solid var(--border)"></span></td><td>Gom nhóm theo lớp B</td></tr>
+            <tr><td class="mono">.tint-orange</td><td class="mono">rgba(242,121,15,.08)</td><td><span style="display:inline-block;width:96px;height:20px;border-radius:4px;background:rgba(242,121,15,.08);border:1px solid var(--border)"></span></td><td>Gom nhóm theo lớp C</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Ngưỡng quy đổi điểm sang màu</h4>
+      <p class="tx">Hàm phân loại dùng chung cho toàn hệ thống — điểm đơn vị, % đạt của nhóm nhiệm vụ, % đạt của từng KPI đều đi qua hàm này:</p>
+      <pre class="code"><span class="c">/* điểm hoặc phần trăm → mã xếp loại */</span>
+<span class="k">const</span> clsOf = p =&gt; p &gt;= 90 ? 'A' : p &gt;= 75 ? 'B' : p &gt;= 60 ? 'C' : 'D';
+
+<span class="c">/* map sang biến màu — dùng biến, không viết thẳng hex trong component */</span>
+<span class="k">const</span> CLS = {
+  A: { c:'var(--st-a)', n:'A · HTXS', rule:'≥ 90 điểm'      },
+  B: { c:'var(--st-b)', n:'B · HTT',  rule:'75 – &lt; 90 điểm' },
+  C: { c:'var(--st-c)', n:'C · HT',   rule:'60 – &lt; 75 điểm' },
+  D: { c:'var(--st-d)', n:'D · CHT',  rule:'&lt; 60 điểm'      },
+};</pre>
+
+      <div class="dd">
+        <div class="p ok">
+          <div class="h"><span class="badge-do">NÊN</span></div>
+          <div class="cmp-row" style="gap:10px">
+            <span class="status"><i class="dot-sm" style="background:#F2C94C"></i>C · HT</span>
+            <span class="mono" style="font-size:13px">74,6</span>
+          </div>
+          <div class="x">Chấm tròn mang màu, chữ giữ màu <code>--fg</code>. Có cả nhãn chữ "C · HT" nên người mù màu vẫn đọc được.</div>
+        </div>
+        <div class="p no">
+          <div class="h"><span class="badge-dont">KHÔNG</span></div>
+          <div class="cmp-row" style="gap:10px">
+            <span style="font-size:12px;color:#F2C94C;font-weight:600">C · HT</span>
+            <span class="mono" style="font-size:13px;color:#F2C94C">74,6</span>
+          </div>
+          <div class="x">Tô chữ bằng màu mark: vàng <span class="mono">#F2C94C</span> chỉ đạt <b>1,59:1</b> trên nền trắng — dưới xa mức 4,5:1 của WCAG AA.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.3 -->
+    <div class="sub" id="s1-3">
+      <div class="sub-h"><span class="no">1.3</span><h3>Màu chữ có trạng thái — bộ <span class="mono">class-ink</span></h3></div>
+      <p class="tx">Có ba chỗ buộc phải tô màu cho chữ: <b>Δ so kỳ trước</b>, <b>pill cảnh báo</b> và <b>tổng điểm của đơn vị loại D</b>. Ở những chỗ đó dùng bộ ink riêng, mọi giá trị đều vượt 4,5:1.</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Biến</th><th class="mono">Light</th><th class="num">Tương phản</th><th class="mono">Dark</th><th class="num">Tương phản</th><th>Dùng cho</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">--st-a-ink</td><td class="mono">#2E7D5B</td><td class="num">5,00:1</td><td class="mono">#5FD39A</td><td class="num">10,21:1</td><td>Δ tăng · pill "Đạt" · help thành công</td></tr>
+            <tr><td class="mono">--st-c-ink</td><td class="mono">#8A6D1F</td><td class="num">4,90:1</td><td class="mono">#E7C158</td><td class="num">11,02:1</td><td>Pill cảnh báo · chờ xác minh</td></tr>
+            <tr><td class="mono">--st-d-ink</td><td class="mono">#C0392F</td><td class="num">5,43:1</td><td class="mono">#FF8080</td><td class="num">7,83:1</td><td>Δ giảm · pill lỗi · điểm loại D</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cmp">
+        <div class="cmp-h"><span class="n">So sánh trực tiếp<em>cùng một chữ, hai bộ màu</em></span></div>
+        <div class="cmp-demo plain">
+          <div class="demo-lb">Màu mark dùng cho chữ — không đạt</div>
+          <div class="cmp-row" style="gap:24px">
+            <span style="font-size:11.5px;font-weight:500;color:#4CB782">▲ 4,2</span>
+            <span style="font-size:11.5px;font-weight:500;color:#F2C94C">Chờ xác minh</span>
+            <span style="font-size:13px;font-weight:600;color:#EB5757" class="mono">59,5</span>
+          </div>
+          <div class="demo-lb" style="margin-top:16px">Bộ class-ink — đạt AA</div>
+          <div class="cmp-row" style="gap:24px">
+            <span class="mono up" style="font-size:11.5px;font-weight:500">▲ 4,2</span>
+            <span style="font-size:11.5px;font-weight:500;color:var(--st-c-ink)">Chờ xác minh</span>
+            <span class="mono" style="font-size:13px;font-weight:600;color:var(--st-d-ink)">59,5</span>
+          </div>
+        </div>
+      </div>
+      <p class="tx"><b>Quy tắc một câu:</b> thanh bar và chấm tròn dùng <code>--st-*</code>; mọi chữ có màu dùng <code>--st-*-ink</code>. Không có ink cho màu B vì <span class="mono">#5E6AD2</span> đã đạt 5,74:1 — dùng thẳng được.</p>
+    </div>
+
+    <!-- 1.4 -->
+    <div class="sub" id="s1-4">
+      <div class="sub-h"><span class="no">1.4</span><h3>Typography</h3></div>
+      <p class="tx"><b>Geist</b> cho giao diện, <b>Geist Mono</b> cho mọi con số. Dự phòng tiếng Việt là <b>Be Vietnam Pro</b> — bắt buộc để trong stack vì Geist thiếu vài dấu phụ ở một số bản.</p>
+
+      <pre class="code"><span class="c">&lt;!-- nạp font: 3 họ, chỉ những weight thực dùng --&gt;</span>
+&lt;link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"&gt;
+
+body{ font-family:Geist,"Be Vietnam Pro",ui-sans-serif,system-ui,-apple-system,sans-serif;
+      font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased; }
+
+<span class="c">/* Mọi con số: bật tnum để cột số thẳng hàng khi cuộn bảng */</span>
+.mono{ font-family:"Geist Mono",ui-monospace,SFMono-Regular,monospace;
+       font-feature-settings:"tnum" 1; }</pre>
+
+      <h4>8 text style đặt tên — dùng lại ở mọi màn hình</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Style</th><th>Font</th><th class="num">Size / Line</th><th class="num">Weight</th><th>Letter</th><th>Dùng ở</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">stat-value</td><td>Geist Mono</td><td class="num">26 / 26</td><td class="num">600</td><td class="mono">-0.02em</td><td>Số lớn trong thẻ chỉ số</td></tr>
+            <tr><td class="mono">title</td><td>Geist</td><td class="num">14 / 20</td><td class="num">600</td><td class="mono">—</td><td>Tiêu đề khối, tiêu đề màn hình</td></tr>
+            <tr><td class="mono">row-unit</td><td>Geist</td><td class="num">13 / 19</td><td class="num">500</td><td class="mono">—</td><td>Tên đơn vị trong hàng danh sách</td></tr>
+            <tr><td class="mono">row</td><td>Geist</td><td class="num">13 / 19</td><td class="num">400</td><td class="mono">—</td><td>Nội dung hàng, tên KPI</td></tr>
+            <tr><td class="mono">row-num</td><td>Geist Mono</td><td class="num">13 / 19</td><td class="num">400</td><td class="mono">—</td><td>Mọi con số trong hàng, mã KPI</td></tr>
+            <tr><td class="mono">tab</td><td>Geist</td><td class="num">12 / 16</td><td class="num">500</td><td class="mono">—</td><td>Tab pill, chip lọc, nút</td></tr>
+            <tr><td class="mono">stat-label</td><td>Geist</td><td class="num">11 / 16</td><td class="num">500</td><td class="mono">—</td><td>Nhãn thẻ chỉ số, nhãn ô nhập</td></tr>
+            <tr><td class="mono">pill</td><td>Geist</td><td class="num">11 / 16</td><td class="num">400</td><td class="mono">—</td><td>Nội dung pill, chú thích nhỏ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cmp">
+        <div class="cmp-h"><span class="n">Mẫu chữ thật<em>đúng cỡ sẽ hiển thị trên màn hình</em></span></div>
+        <div class="cmp-demo plain">
+          <div class="type-row"><div class="meta">stat-value · Mono 26/26 · 600</div><div class="sample"><span class="mono" style="font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1">78,8</span></div></div>
+          <div class="type-row"><div class="meta">card-value · Geist 22 · 600</div><div class="sample"><span style="font-size:22px;font-weight:600;letter-spacing:-.02em">12 báo cáo</span></div></div>
+          <div class="type-row"><div class="meta">title · Geist 14/20 · 600</div><div class="sample"><span style="font-size:14px;font-weight:600">Xếp hạng đơn vị cơ sở</span></div></div>
+          <div class="type-row"><div class="meta">row-unit · Geist 13/19 · 500</div><div class="sample"><span style="font-size:13px;font-weight:500">Chi bộ Phòng CNTT</span></div></div>
+          <div class="type-row"><div class="meta">row · Geist 13/19 · 400</div><div class="sample"><span style="font-size:13px">Hoàn thiện thể chế, cơ chế, chính sách</span></div></div>
+          <div class="type-row"><div class="meta">row-num · Mono 13/19 · 400</div><div class="sample"><span class="mono" style="font-size:13px">92,4 · 90,2 · 88,1 · 86,6</span></div></div>
+          <div class="type-row"><div class="meta">body · Geist 12.5 · 400</div><div class="sample"><span style="font-size:12.5px">Mô tả trong thẻ, nội dung callout và bảng</span></div></div>
+          <div class="type-row"><div class="meta">tab · Geist 12/16 · 500</div><div class="sample"><span style="font-size:12px;font-weight:500">Tổng quan điều hành</span></div></div>
+          <div class="type-row"><div class="meta">caption · Geist 11.5 · 400</div><div class="sample"><span style="font-size:11.5px;color:var(--muted-fg)">12/13 đơn vị đã nộp · hạn thẩm định 20/07</span></div></div>
+          <div class="type-row"><div class="meta">stat-label · Geist 11/16 · 500</div><div class="sample"><span style="font-size:11px;font-weight:500;color:var(--muted-fg)">Điểm bình quân Đảng bộ</span></div></div>
+          <div class="type-row"><div class="meta">micro · Geist 10.5 · 400</div><div class="sample"><span style="font-size:10.5px;color:var(--muted-fg)">Trục biểu đồ, tỉ lệ hoàn thành nhóm</span></div></div>
+          <div class="type-row"><div class="meta">badge · Geist 10 · 600</div><div class="sample"><span style="font-size:10px;font-weight:600">VP · 03 · ⌘K</span></div></div>
+          <div class="type-row"><div class="meta">nano · Geist 9.5 · 600</div><div class="sample"><span style="font-size:9.5px;font-weight:600">CAO</span></div></div>
+        </div>
+      </div>
+
+      <h4>Bảng tra cỡ chữ đầy đủ — mọi giá trị đang tồn tại trong hệ thống</h4>
+      <p class="tx">Không phát sinh cỡ chữ mới ngoài danh sách này. Nếu thấy cần một cỡ khác, dùng cỡ gần nhất.</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th class="num" style="width:66px">Size</th><th class="num" style="width:70px">Weight</th><th style="width:96px">Font</th><th>Xuất hiện ở</th></tr></thead>
+          <tbody>
+            <tr><td class="num">26</td><td class="num">600</td><td>Mono</td><td>Giá trị thẻ chỉ số <code>.stat .val</code> — line-height 1, letter-spacing -.02em</td></tr>
+            <tr><td class="num">22</td><td class="num">600</td><td>Geist</td><td>Giá trị lớn trong card <code>.card .cv</code></td></tr>
+            <tr><td class="num">19</td><td class="num">600</td><td>Mono</td><td>Biến thể thẻ chỉ số nhiều số cạnh nhau (cơ cấu xếp loại)</td></tr>
+            <tr><td class="num">14</td><td class="num">400</td><td>Geist</td><td>Cỡ gốc của <code>body</code> — thực tế hiếm dùng trực tiếp, hầu hết component ghi đè xuống 13 hoặc 12</td></tr>
+            <tr><td class="num">13</td><td class="num">400 / 500 / 600</td><td>Geist + Mono</td><td>Hàng danh sách, mục điều hướng, ô nhập, tiêu đề khối, tên tổ chức, nhãn biểu đồ, header nhóm</td></tr>
+            <tr><td class="num">12.5</td><td class="num">400 / 500 / 600</td><td>Geist</td><td>Nút, bảng, callout, dropzone, tiêu đề card, tên nhóm trong panel, mốc thời gian</td></tr>
+            <tr><td class="num">12</td><td class="num">400 / 500 / 600</td><td>Geist</td><td>Tab, chip lọc, ô tìm kiếm, key-value, status tag, bước quy trình, tiêu đề hàng heatmap</td></tr>
+            <tr><td class="num">11.5</td><td class="num">400 / 500</td><td>Geist</td><td>Chú thích, mô tả phụ, Δ kỳ, dấu thời gian, đơn vị trong ô nhập, phần phải của section header</td></tr>
+            <tr><td class="num">11</td><td class="num">400 / 500 / 600</td><td>Geist + Mono</td><td>Nhãn thẻ chỉ số, pill, nhãn ô nhập, help text, giá trị thanh tiến độ, legend, header bảng, số thứ tự</td></tr>
+            <tr><td class="num">10.5</td><td class="num">400 / 500</td><td>Geist + Mono</td><td>Trục biểu đồ, tiêu đề cột heatmap, tỉ lệ trong panel, mã màu swatch</td></tr>
+            <tr><td class="num">10</td><td class="num">600</td><td>Geist + Mono</td><td>Badge đếm, avatar, phím tắt, ô số nhóm, ô heatmap</td></tr>
+            <tr><td class="num">9.5</td><td class="num">600</td><td>Geist</td><td>Nhãn mức độ cảnh báo, chú thích trong sơ đồ dữ liệu</td></tr>
+            <tr><td class="num">9</td><td class="num">700</td><td>Geist</td><td>Số trong chấm bước quy trình</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Quy tắc dùng chữ</h4>
+      <ul class="tx">
+        <li><b>Số luôn là mono.</b> Điểm, phần trăm, mã KPI (<span class="mono">A.15</span>), ngày giờ (<span class="mono">15/07 03:00</span>), số đếm, kích thước file. Chữ tiếng Việt không bao giờ mono.</li>
+        <li><b>Dấu thập phân là dấu phẩy.</b> <span class="mono">78,8</span> chứ không phải <span class="mono">78.8</span>. Hàm định dạng: <code>Number(n).toFixed(1).replace('.',',')</code>.</li>
+        <li><b>Giá trị rỗng hiển thị bằng em dash</b> <span class="mono">—</span>, màu <code>--muted-fg</code>, không để trống và không viết "N/A".</li>
+        <li><b>Không dùng chữ in hoa toàn bộ</b> cho nội dung tiếng Việt — dấu thanh bị vỡ nhịp. Nhãn viết thường như bình thường.</li>
+        <li><b>Cắt chữ dài bằng ellipsis một dòng</b>: <code>white-space:nowrap; overflow:hidden; text-overflow:ellipsis</code> kèm <code>min-width:0</code> ở phần tử cha flex, và luôn đặt <code>title</code> để hiện tooltip đầy đủ.</li>
+      </ul>
+    </div>
+
+    <!-- 1.5 -->
+    <div class="sub" id="s1-5">
+      <div class="sub-h"><span class="no">1.5</span><h3>Radius · Spacing · Size</h3></div>
+
+      <h4>Bo góc</h4>
+      <div class="spec">
+        <div class="box"><div style="width:64px;height:40px;border:1px solid var(--border);border-radius:10px;background:var(--muted)"></div><span class="cap">--r-lg · 10px</span></div>
+        <div class="box"><div style="width:64px;height:40px;border:1px solid var(--border);border-radius:8px;background:var(--muted)"></div><span class="cap">--r-md · 8px</span></div>
+        <div class="box"><div style="width:64px;height:40px;border:1px solid var(--border);border-radius:6px;background:var(--muted)"></div><span class="cap">--r-sm · 6px</span></div>
+        <div class="box"><div style="width:64px;height:40px;border:1px solid var(--border);border-radius:999px;background:var(--muted)"></div><span class="cap">--r-full · 999px</span></div>
+      </div>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Token</th><th class="num">Giá trị</th><th>Áp cho</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">--r-lg</td><td class="num">10px</td><td>Card, callout, dropzone, thẻ trong sidebar</td></tr>
+            <tr><td class="mono">--r-md</td><td class="num">8px</td><td>Khung nội dung, nút, ô nhập, chip, mục điều hướng, nút icon</td></tr>
+            <tr><td class="mono">--r-sm</td><td class="num">6px</td><td>Ô số thứ tự, avatar tổ chức, ô heatmap</td></tr>
+            <tr><td class="mono">--r-full</td><td class="num">999px</td><td>Pill, tab, avatar người dùng, chấm trạng thái, badge</td></tr>
+            <tr><td class="mono">—</td><td class="num">5px</td><td>Ô số nhóm 18×18 và thanh bar biểu đồ (nửa chiều cao 10px)</td></tr>
+            <tr><td class="mono">—</td><td class="num">4px</td><td>Phím tắt <code>.kbd</code>, nhãn mức cảnh báo, thumb thanh cuộn</td></tr>
+            <tr><td class="mono">—</td><td class="num">3px</td><td>Thanh tiến độ 5px, segbar</td></tr>
+            <tr><td class="mono">—</td><td class="num">2px</td><td>Thanh tiến độ 4px trong sidebar và panel</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Khoảng cách</h4>
+      <div class="spec">
+        <div class="box"><div style="width:48px;height:14px;background:var(--st-orange);opacity:.35;border-radius:2px"></div><span class="cap">row-x · 24</span></div>
+        <div class="box"><div style="width:22px;height:14px;background:var(--st-orange);opacity:.35;border-radius:2px"></div><span class="cap">row-y · 11</span></div>
+        <div class="box"><div style="width:32px;height:14px;background:var(--st-orange);opacity:.35;border-radius:2px"></div><span class="cap">card pad · 14</span></div>
+        <div class="box"><div style="width:32px;height:14px;background:var(--st-orange);opacity:.35;border-radius:2px"></div><span class="cap">panel pad · 16</span></div>
+        <div class="box"><div style="width:16px;height:14px;background:var(--st-orange);opacity:.35;border-radius:2px"></div><span class="cap">shell gap · 8</span></div>
+      </div>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th class="num" style="width:70px">Giá trị</th><th>Ý nghĩa và nơi dùng</th></tr></thead>
+          <tbody>
+            <tr><td class="num">24px</td><td><code>--pad-x</code> — lề trái/phải chuẩn của mọi nội dung trong khung: hàng danh sách, header, thẻ chỉ số, bảng, biểu đồ. <b>Đây là cột mốc căn lề duy nhất</b>, mọi thứ phải thẳng theo nó.</td></tr>
+            <tr><td class="num">20px</td><td>Khoảng cách cột trong lưới biểu mẫu</td></tr>
+            <tr><td class="num">16px</td><td>Padding dọc thẻ chỉ số, padding panel phải, padding khối biểu mẫu, gap legend biểu đồ</td></tr>
+            <tr><td class="num">14px</td><td>Padding card, khoảng cách hàng trong lưới biểu mẫu, gap cột biểu đồ</td></tr>
+            <tr><td class="num">12px</td><td>Padding thẻ sidebar, gap giữa các card, gap legend</td></tr>
+            <tr><td class="num">11px</td><td>Padding dọc của hàng danh sách → hàng cao 38–40px tuỳ nội dung</td></tr>
+            <tr><td class="num">10px</td><td>Padding ngang trong ô nhập, tab và ô tìm kiếm</td></tr>
+            <tr><td class="num">9px</td><td>Padding ngang chip, padding dọc ô bảng, gap hàng biểu đồ</td></tr>
+            <tr><td class="num">8px</td><td>Gap mặc định giữa các phần tử trong hàng; padding sidebar; khe giữa sidebar và khung nội dung</td></tr>
+            <tr><td class="num">6px</td><td>Gap giữa icon và chữ, gap giữa các nút icon</td></tr>
+            <tr><td class="num">4px</td><td>Gap giữa các tab</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Kích thước cố định</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Token</th><th class="num">Giá trị</th><th>Thành phần</th><th>Ghi chú khi code</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">--w-sidebar</td><td class="num">244px</td><td>Thanh điều hướng trái</td><td><code>flex:none</code>, không co giãn</td></tr>
+            <tr><td class="mono">--w-panel</td><td class="num">328px</td><td>Panel phân tích phải</td><td><code>flex:none</code>, ẩn dưới 1330px</td></tr>
+            <tr><td class="mono">--h-header</td><td class="num">40px</td><td>Header chính, thanh lọc, header nhóm, header panel</td><td>Bốn thành phần khác nhau dùng chung một chiều cao</td></tr>
+            <tr><td class="mono">—</td><td class="num">38px</td><td>Section header của danh sách</td><td>Thấp hơn header 2px là chủ ý — tạo phân cấp</td></tr>
+            <tr><td class="mono">—</td><td class="num">32px</td><td>Ô nhập, select</td><td>Textarea <code>min-height:64px</code></td></tr>
+            <tr><td class="mono">—</td><td class="num">30px</td><td>Nút, mục điều hướng sidebar</td><td></td></tr>
+            <tr><td class="mono">—</td><td class="num">28px</td><td>Tab, ô tìm kiếm, nút icon, nhãn nhóm sidebar</td><td></td></tr>
+            <tr><td class="mono">—</td><td class="num">26px</td><td>Chip lọc, avatar tổ chức, ô heatmap</td><td></td></tr>
+            <tr><td class="mono">—</td><td class="num">24px</td><td>Avatar người dùng, ô số thứ tự</td><td></td></tr>
+            <tr><td class="mono">—</td><td class="num">18px</td><td>Ô số nhóm, chấm bước quy trình, rail mốc thời gian</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Chiều cao thanh và chấm</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th class="num" style="width:70px">Cao</th><th>Thành phần</th><th>Bo góc</th></tr></thead>
+          <tbody>
+            <tr><td class="num">10px</td><td>Thanh biểu đồ nhóm nhiệm vụ <code>.gc-bar</code></td><td class="num">5px</td></tr>
+            <tr><td class="num">5px</td><td>Thanh tiến độ trong hàng <code>.trk</code> · segbar của thẻ chỉ số</td><td class="num">3px</td></tr>
+            <tr><td class="num">4px</td><td>Thanh tiến độ trong panel <code>.gp-trk</code> · thanh trong thẻ sidebar</td><td class="num">2px</td></tr>
+            <tr><td class="num">9px</td><td>Chấm mốc thời gian</td><td>tròn</td></tr>
+            <tr><td class="num">8px</td><td>Chấm lớp chỉ số <code>.dot</code></td><td>tròn</td></tr>
+            <tr><td class="num">6px</td><td>Chấm trạng thái <code>.dot-sm</code> — dùng nhiều nhất</td><td>tròn</td></tr>
+            <tr><td class="num">1.5px</td><td>Vạch mốc 75% trên thanh tiến độ · đường rail mốc thời gian</td><td class="num">1px</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 1.6 -->
+    <div class="sub" id="s1-6">
+      <div class="sub-h"><span class="no">1.6</span><h3>Đường viền, nền hover và focus</h3></div>
+      <p class="tx">Hệ thống không có đổ bóng. Ba loại đường kẻ, phân biệt rất rõ:</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th style="width:190px">Loại</th><th>Giá trị</th><th>Dùng cho</th></tr></thead>
+          <tbody>
+            <tr><td><b>Viền cấu trúc</b></td><td class="mono">1px solid var(--border)</td><td>Khung nội dung, header, card, panel, ô nhập, bảng header — mọi ranh giới bố cục</td></tr>
+            <tr><td><b>Kẻ chia hàng</b></td><td class="mono">1px solid rgba(113,113,122,.10)<br>dark: rgba(161,161,170,.10)</td><td>Giữa các hàng danh sách và các ô bảng. <b>Nhạt hơn viền cấu trúc</b> để danh sách 13 dòng không thành lưới kẻ ô.</td></tr>
+            <tr><td><b>Viền nét đứt</b></td><td class="mono">1px dashed · 1.5px dashed</td><td>Chip "Thêm bộ lọc" (1px), dropzone (1.5px), vạch phân định ngưỡng, vạch mục tiêu trên biểu đồ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Nền hover</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th style="width:220px">Ngữ cảnh</th><th>Giá trị</th></tr></thead>
+          <tbody>
+            <tr><td>Hàng danh sách, hàng bảng</td><td class="mono">background: rgba(113,113,122,.05)</td></tr>
+            <tr><td>Nút, chip, tab, mục panel</td><td class="mono">background: var(--muted)</td></tr>
+            <tr><td>Mục điều hướng sidebar</td><td class="mono">background: var(--sidebar-accent)</td></tr>
+            <tr><td>Nút primary</td><td class="mono">background: #4F5AC4 <span class="mut">(tối hơn --st-b một bậc)</span></td></tr>
+            <tr><td>Tên đơn vị có thể bấm</td><td class="mono">text-decoration: underline; text-underline-offset: 2px</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Focus và thanh cuộn</h4>
+      <pre class="code">:focus-visible{ outline:2px solid var(--ring); outline-offset:1px; border-radius:6px }
+.input:focus{ border-color:var(--ring); outline:none }   <span class="c">/* ô nhập chỉ đổi viền */</span>
+
+::-webkit-scrollbar{ width:8px; height:8px }
+::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px }
+::-webkit-scrollbar-track{ background:transparent }</pre>
+      <div class="note err">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-d-ink)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+        <div>Không được xoá <code>:focus-visible</code> để "cho gọn". Toàn bộ điều hướng bằng bàn phím phụ thuộc vào nó, và đây là điểm dễ bị loại nhất khi rà soát khả năng tiếp cận.</div>
+      </div>
+    </div>
+
+    <!-- 1.7 -->
+    <div class="sub" id="s1-7">
+      <div class="sub-h"><span class="no">1.7</span><h3>Icon</h3></div>
+      <p class="tx">Bộ <b>lucide</b>, vẽ trong khung <span class="mono">24×24</span>, <code>fill="none"</code>, <code>stroke="currentColor"</code>. Icon thừa hưởng màu chữ của phần tử cha nên không cần token màu riêng.</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th class="num" style="width:90px">Kích thước</th><th class="num" style="width:90px">Stroke</th><th>Dùng ở</th></tr></thead>
+          <tbody>
+            <tr><td class="num">16px</td><td class="num">1.8</td><td>Mục điều hướng sidebar (<code>opacity:.75</code>), nút icon, icon trong callout</td></tr>
+            <tr><td class="num">14px</td><td class="num">1.8 – 2</td><td>Nút có chữ, ô tìm kiếm, mũi tên chuyển đổi tổ chức</td></tr>
+            <tr><td class="num">13px</td><td class="num">1.8</td><td>Icon nhãn thẻ chỉ số (<code>opacity:.7</code>)</td></tr>
+            <tr><td class="num">12px</td><td class="num">1.8</td><td>Icon trong chip lọc (<code>opacity:.6</code>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tx">Icon thuần hình học — <code>search</code>, <code>chevron</code>, <code>plus</code>, <code>x</code>, <code>sliders</code> — vẽ stroke <b>2</b> thay vì 1.8 để nét không bị mảnh ở cỡ nhỏ.</p>
+
+      <div class="cmp">
+        <div class="cmp-h"><span class="n">Status/Icon<em>bốn icon xếp loại, khung 14×14, không phải lucide</em></span><span class="tags"><span class="tag">Status/Icon</span></span></div>
+        <div class="cmp-demo plain">
+          <div class="cmp-row" style="gap:26px">
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:12px">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="var(--st-a)"><path fill-rule="evenodd" d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm4.1 5.1a1 1 0 0 0-1.2-1.2L5.5 8.3 4.1 6.9a1 1 0 1 0-1.2 1.2l2 2a1 1 0 0 0 1.2 0z"/></svg>
+              A · vòng tròn đặc + dấu tích</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:12px">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none"><rect x="1" y="1" width="12" height="12" rx="6" stroke="var(--st-b)" stroke-width="1.5"/><path fill="var(--st-b)" d="M3.5 3.5 3.5 0A3.5 3.5 0 0 1 7 3.5z" transform="translate(3.5,3.5)"/><path fill="var(--st-b)" d="M3.5 3.5 7 3.5A3.5 3.5 0 0 1 3.5 7z" transform="translate(3.5,3.5)"/></svg>
+              B · vòng tròn rỗng, ruột 2/4</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:12px">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none"><rect x="1" y="1" width="12" height="12" rx="6" stroke="var(--st-c)" stroke-width="1.5"/><path fill="var(--st-c)" d="M3.5 3.5 3.5 0A3.5 3.5 0 0 1 7 3.5z" transform="translate(3.5,3.5)"/></svg>
+              C · ruột 1/4</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;font-size:12px">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="var(--st-d)"><path fill-rule="evenodd" d="M7 14A7 7 0 1 0 7 0a7 7 0 0 0 0 14zM5 4a.75.75 0 0 0-1 1l2 2-2 2a.75.75 0 1 0 1 1l2-2 2 2a.75.75 0 0 0 1-1L8 7l2-2a.75.75 0 0 0-1-1L7 6z"/></svg>
+              D · vòng tròn đặc + dấu nhân</span>
+          </div>
+        </div>
+        <div class="cmp-body">
+          <p class="tx" style="margin-top:12px">Bốn icon này mã hoá mức độ <b>bằng cả hình lẫn màu</b> (độ đầy của ruột tăng dần từ C → B → A), nên vẫn phân biệt được khi in trắng đen. Dùng ở header nhóm; ở hàng danh sách thì dùng chấm 6px kèm nhãn chữ.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 02 · GRID & LAYOUT ═════════ -->
+  <section class="sec" id="s2">
+    <div class="sec-h"><span class="no">02</span><h2>Grid &amp; Layout</h2></div>
+    <p class="lead">Khổ thiết kế chuẩn <b>1440×900</b>. Bố cục là <b>flexbox lồng nhau</b>, không dùng lưới 12 cột: hai cột biên có bề rộng cố định (244 và 328), cột giữa co giãn. Trang không bao giờ cuộn ở cấp <code>body</code> — chỉ ba vùng con cuộn độc lập.</p>
+
+    <!-- 2.1 -->
+    <div class="sub" id="s2-1">
+      <div class="sub-h"><span class="no">2.1</span><h3>Khung ứng dụng</h3></div>
+      <div class="blueprint">
+        <div class="bp-clip"><div class="bp-scale">
+          <div class="bp">
+            <div class="bp-side z"><div><div class="lb">Layout/Sidebar</div><div class="px">244 × 900 · flex:none</div></div></div>
+            <div class="bp-shell">
+              <div class="bp-frame">
+                <div class="bp-h z"><div><div class="lb" style="font-size:17px">Header/Primary · cao 40</div></div></div>
+                <div class="bp-h2 z"><div><div class="lb" style="font-size:17px">Header/FilterBar · cao 40</div></div></div>
+                <div class="bp-mid">
+                  <div class="bp-main z"><div><div class="lb">Layout/MainScroll</div><div class="px">flex:1 · min-width:0 · overflow-y:auto</div><div class="px">rộng 859 ở khổ 1440</div></div></div>
+                  <div class="bp-panel z"><div><div class="lb">Layout/InsightPanel</div><div class="px">328 · flex:none</div><div class="px">cuộn riêng</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="bp-dim" style="left:8px;top:8px">0 → 244</div>
+            <div class="bp-dim" style="left:252px;top:8px">khe 8</div>
+            <div class="bp-dim" style="right:344px;top:8px">frame 1188 × 884 · radius 8</div>
+            <div class="bp-dim" style="right:8px;bottom:8px">panel 328</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="anat">
+        <span class="i">1</span><span class="d"><b>body</b> — <code>display:flex; height:100svh; overflow:hidden</code>. Đây là lý do trang không có thanh cuộn tổng.</span>
+        <span class="i">2</span><span class="d"><b>Sidebar 244px</b> — nền <code>--sidebar</code>, <b>không có viền phải</b>. Ranh giới với nội dung tạo bởi khe 8px + viền của khung nội dung.</span>
+        <span class="i">3</span><span class="d"><b>Shell</b> — <code>padding:8px 8px 8px 0</code>. Khe 8px ba phía; phía trái bằng 0 vì sidebar đã có padding riêng.</span>
+        <span class="i">4</span><span class="d"><b>ContentFrame</b> — <code>background:var(--container); border:1px solid var(--border); border-radius:8px; overflow:hidden</code>. Cắt mọi thứ bên trong theo góc bo.</span>
+        <span class="i">5</span><span class="d"><b>Hai header xếp chồng</b>, mỗi cái 40px, đều <code>flex:none</code> và có viền dưới. Tổng chiều cao chrome trên cùng: 80px.</span>
+        <span class="i">6</span><span class="d"><b>Body</b> — <code>flex:1; min-height:0; display:flex</code>. Thiếu <code>min-height:0</code> thì vùng cuộn bên trong sẽ tràn — lỗi hay gặp nhất khi dựng lại bố cục này.</span>
+        <span class="i">7</span><span class="d"><b>Panel 328px</b> — <code>border-left</code>, nền <code>--container</code>, cuộn độc lập với vùng chính.</span>
+      </div>
+
+      <pre class="code"><span class="c">/* Bộ khung tối thiểu — copy nguyên */</span>
+body{ display:flex; height:100svh; overflow:hidden }
+
+.sidebar{ width:244px; flex:none; background:var(--sidebar); display:flex; flex-direction:column; height:100% }
+.shell  { flex:1; min-width:0; height:100%; padding:8px 8px 8px 0; overflow:hidden }
+.frame  { height:100%; width:100%; background:var(--container); border:1px solid var(--border);
+          border-radius:8px; display:flex; flex-direction:column; overflow:hidden }
+.hdr,
+.subhdr { height:40px; flex:none; border-bottom:1px solid var(--border);
+          display:flex; align-items:center; justify-content:space-between; padding:0 24px; gap:16px }
+.body   { flex:1; min-height:0; display:flex; overflow:hidden }
+.main   { flex:1; min-width:0; overflow-y:auto }
+.panel  { width:328px; flex:none; border-left:1px solid var(--border); overflow-y:auto; background:var(--container) }</pre>
+
+      <div class="note info">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-b)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span>
+        <div><b>Ba vùng cuộn độc lập:</b> sidebar (giữa header và footer), vùng chính, và panel phải. Khi chuyển màn hình phải <code>scrollTop = 0</code> cho vùng chính — nếu không, màn hình mới sẽ mở ở giữa trang.</div>
+      </div>
+    </div>
+
+    <!-- 2.2 -->
+    <div class="sub" id="s2-2">
+      <div class="sub-h"><span class="no">2.2</span><h3>Nhịp dọc và chiều cao</h3></div>
+      <p class="tx">Đo từ mép trên khung nội dung xuống, ở màn hình danh sách điển hình:</p>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Lớp</th><th class="num">Cao</th><th class="num">Cộng dồn</th><th>Ghi chú</th></tr></thead>
+          <tbody>
+            <tr><td>Header/Primary</td><td class="num">40</td><td class="num">40</td><td>Breadcrumb + tab + tìm kiếm + avatar</td></tr>
+            <tr><td>Header/FilterBar</td><td class="num">40</td><td class="num">80</td><td>Chip lọc + dấu thời gian cập nhật</td></tr>
+            <tr><td>Data/StatStrip</td><td class="num">~118</td><td class="num">198</td><td>Padding 16 trên dưới; chiều cao phụ thuộc có segbar/legend hay không</td></tr>
+            <tr><td>List/SectionHeader</td><td class="num">38</td><td class="num">236</td><td>Thấp hơn header 2px</td></tr>
+            <tr><td>List/GroupHeader</td><td class="num">40</td><td class="num">276</td><td>Dính khi cuộn (<code>position:sticky; top:0; z-index:5</code>)</td></tr>
+            <tr><td>List/UnitRow</td><td class="num">~40</td><td class="num">316</td><td>Padding dọc 11 + nội dung 18 → 40. Với 13 hàng là 520px.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tx">Ở khổ 900px, vùng cuộn còn <b>820px</b> sau khi trừ 80px chrome. Một màn hình danh sách chuẩn hiển thị được thanh chỉ số + section header + khoảng 13–15 hàng mà không cần cuộn — đây là ràng buộc thiết kế, đừng nới chiều cao hàng.</p>
+    </div>
+
+    <!-- 2.3 -->
+    <div class="sub" id="s2-3">
+      <div class="sub-h"><span class="no">2.3</span><h3>Lưới cột của hàng dữ liệu</h3></div>
+      <p class="tx">Hàng danh sách là <b>flex</b> với một cột co giãn ở trái và các cột số có bề rộng cố định ở phải. Bề rộng cố định là thứ giữ cho các cột số thẳng hàng giữa các hàng mà không cần dùng <code>table</code>.</p>
+
+      <div class="cmp">
+        <div class="cmp-h"><span class="n">List/UnitRow — bản đồ cột</span><span class="tags"><span class="tag">.row</span><span class="tag b">gap 8 · padding 11 / 24</span></span></div>
+        <div class="cmp-demo plain" style="padding:0">
+          <div class="row" style="border-bottom:1px solid var(--border);font-size:10.5px;color:var(--muted-fg);font-family:'Geist Mono',monospace;padding-top:7px;padding-bottom:7px">
+            <div class="row-main">flex:1 · min-width:0</div>
+            <div class="col c-trk" style="justify-content:flex-start">112</div>
+            <div class="col c-lay">44</div><div class="col c-lay">44</div><div class="col c-lay">44</div>
+            <div class="col c-tot">54</div><div class="col c-cls">88</div><div class="col c-dt">46</div>
+          </div>
+          <div class="row" style="border-bottom:0">
+            <div class="row-main">
+              <span class="rank mono">01</span>
+              <span class="unit">Chi bộ Phòng CNTT</span>
+              <span class="pill"><i class="dot-sm" style="background:var(--st-cyan)"></i>P.CNTT</span>
+            </div>
+            <div class="col c-trk"><span class="trk"><i style="width:92.4%;background:var(--st-a)"></i></span><span class="trk-v mono">92%</span></div>
+            <div class="col c-lay mono">28,2</div><div class="col c-lay mono">41,4</div><div class="col c-lay mono">22,8</div>
+            <div class="col c-tot mono">92,4</div>
+            <div class="col c-cls"><span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>A · HTXS</span></div>
+            <div class="col c-dt"><span class="mono up">▲ 5,1</span></div>
+          </div>
+        </div>
+        <div class="cmp-body">
+          <div class="t-wrap">
+            <table class="sp">
+              <thead><tr><th>Class</th><th class="num">Rộng</th><th>Căn</th><th>Nội dung</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">.row-main</td><td class="num">co giãn</td><td>trái</td><td>Số thứ tự 24px + tên (ellipsis) + pill mã đơn vị + pill cảnh báo. Bắt buộc <code>min-width:0</code>.</td></tr>
+                <tr><td class="mono">.c-trk</td><td class="num">112</td><td>—</td><td>Thanh tiến độ co giãn + giá trị % rộng 34, gap 8</td></tr>
+                <tr><td class="mono">.c-lay</td><td class="num">44</td><td>phải</td><td>Điểm từng lớp A / B / C, màu <code>--muted-fg</code>, mono</td></tr>
+                <tr><td class="mono">.c-tot</td><td class="num">54</td><td>phải</td><td>Tổng điểm, weight 600. Loại D đổi màu chữ sang <code>--st-d-ink</code>.</td></tr>
+                <tr><td class="mono">.c-cls</td><td class="num">88</td><td>trái</td><td>Chấm 6px + nhãn xếp loại. Căn trái để nhãn dài ngắn khác nhau vẫn thẳng đầu.</td></tr>
+                <tr><td class="mono">.c-dt</td><td class="num">46</td><td>phải</td><td>Δ so kỳ trước, mũi tên ▲▼ + số, màu ink</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="tx"><b>Tổng cột cố định:</b> 112 + 44×3 + 54 + 88 + 46 = <span class="mono">432px</span>, cộng 7 khe gap 8px = <span class="mono">488px</span>. Ở vùng chính rộng 859px, cột tên còn <span class="mono">323px</span> — đủ cho tên đơn vị dài nhất trước khi cắt ellipsis.</p>
+          <p class="tx"><code>List/KpiRow</code> dùng cùng cơ chế nhưng bộ cột khác: mã KPI 38 · mục tiêu 70 · thực hiện 64 · tiến độ 104 · điểm 52 · xếp loại 88 · đơn vị phụ trách 84.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.4 -->
+    <div class="sub" id="s2-4">
+      <div class="sub-h"><span class="no">2.4</span><h3>Lưới thẻ chỉ số, biểu mẫu và card</h3></div>
+      <div class="cols2">
+        <div>
+          <h4>Data/StatStrip</h4>
+          <pre class="code">.stats   { display:grid; gap:0; border-bottom:1px solid var(--border) }
+.stats.c4{ grid-template-columns:repeat(4,1fr) }
+.stats.c3{ grid-template-columns:repeat(3,1fr) }
+.stats.c2{ grid-template-columns:repeat(2,1fr) }
+.stat    { padding:16px 24px; border-right:1px solid var(--border);
+           min-width:0 }
+.stat:last-child{ border-right:0 }</pre>
+          <p class="tx"><b>gap:0</b> — các ô ngăn nhau bằng viền chứ không bằng khoảng trống, nên dải thẻ đọc như một khối liền. Ở 1440px, thẻ trong lưới c4 rộng <span class="mono">214px</span>.</p>
+        </div>
+        <div>
+          <h4>Form grid</h4>
+          <pre class="code">.fgrid    { display:grid; gap:14px 20px;
+            grid-template-columns:repeat(2,minmax(0,1fr)) }
+.fgrid.c1 { grid-template-columns:1fr }
+.fgrid.c3 { grid-template-columns:repeat(3,minmax(0,1fr)) }
+.form-sec { padding:16px 24px; border-bottom:1px solid var(--border) }</pre>
+          <p class="tx"><code>minmax(0,1fr)</code> chứ không phải <code>1fr</code> — nếu không, ô nhập có nội dung dài sẽ đẩy giãn cột.</p>
+        </div>
+      </div>
+      <h4>Card</h4>
+      <pre class="code">.cards    { display:grid; gap:12px; padding:16px 24px }
+.cards.c2 { grid-template-columns:repeat(2,minmax(0,1fr)) }
+.cards.c3 { grid-template-columns:repeat(3,minmax(0,1fr)) }
+.card     { border:1px solid var(--border); border-radius:10px; padding:14px; background:var(--container) }</pre>
+      <p class="tx">Card <b>không</b> có đổ bóng và <b>không</b> đổi nền khi hover trừ khi nó là phần tử bấm được. Card mang trạng thái thì đổi <code>border-color</code> sang màu xếp loại, giữ nguyên nền.</p>
+    </div>
+
+    <!-- 2.5 -->
+    <div class="sub" id="s2-5">
+      <div class="sub-h"><span class="no">2.5</span><h3>Lưới biểu đồ thanh ngang</h3></div>
+      <p class="tx">Biểu đồ 8 nhóm nhiệm vụ là <b>DOM thuần, không phải SVG</b> — để nhãn tiếng Việt dài vẫn cắt ellipsis được và toàn bộ vẫn theo lưới của trang.</p>
+      <pre class="code">.gchart{ position:relative; padding:14px 24px 10px; display:grid;
+         grid-template-columns:248px minmax(0,1fr) 96px;   <span class="c">/* nhãn · vùng vẽ · giá trị */</span>
+         align-items:center; gap:9px 14px }
+
+<span class="c">/* Lưới dọc phải phủ ĐÚNG vùng vẽ, nên định vị bằng px tuyệt đối:
+   trái  = padding 24 + cột nhãn 248 + gap 14 = 286
+   phải  = padding 24 + cột giá trị 96 + gap 14 = 134  */</span>
+.gc-lines{ position:absolute; left:286px; right:134px; top:14px; bottom:34px; z-index:2; pointer-events:none }
+.gc-lines i  { position:absolute; top:0; bottom:0; width:1px; background:var(--fg); opacity:.13 }
+.gc-lines i.t{ width:0; border-left:1.5px dashed var(--muted-fg); opacity:.8; background:none }  <span class="c">/* mốc 75% */</span></pre>
+      <div class="note warn">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-c-ink)" stroke-width="1.8" stroke-linecap="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+        <div><b>286 và 134 là số dẫn xuất.</b> Đổi bề rộng cột nhãn hoặc cột giá trị thì phải tính lại hai số này, nếu không lưới dọc sẽ lệch khỏi thanh bar. Công thức nằm ngay trong comment ở trên — giữ comment đó khi code.</div>
+      </div>
+      <p class="tx">Trục X nằm ở hàng cuối của lưới, chiếm ô giữa: <code>.gc-axis</code> cao 15px, các mốc 0 / 25 / 50 / 75 / 100 định vị <code>left:%</code> với <code>transform:translateX(-50%)</code>; mốc đầu bỏ transform, mốc cuối dùng <code>-100%</code> để không tràn mép.</p>
+    </div>
+
+    <!-- 2.6 -->
+    <div class="sub" id="s2-6">
+      <div class="sub-h"><span class="no">2.6</span><h3>Breakpoint, sticky và thứ tự lớp</h3></div>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th class="num" style="width:120px">Ngưỡng</th><th>Hành vi</th><th>Lý do</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">&lt; 1620px</td><td>Ẩn phụ đề trong breadcrumb, chỉ còn mã màn hình</td><td>Nhường chỗ cho dải tab</td></tr>
+            <tr><td class="mono">&lt; 1600px</td><td>Ẩn pill nguồn dữ liệu trong <code>List/KpiRow</code> (<code>.pill.opt</code>)</td><td>Giữ tên KPI không bị cắt quá sớm</td></tr>
+            <tr><td class="mono">&lt; 1330px</td><td>Ẩn <code>Layout/InsightPanel</code></td><td>Dưới mức này panel 328px lấn quá nửa vùng chính</td></tr>
+            <tr><td class="mono">&lt; 1200px</td><td>Ẩn <code>Layout/Sidebar</code>, shell chuyển <code>padding:8px</code> đều bốn phía, thẻ chỉ số về 2 cột</td><td>Ưu tiên nội dung</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tx">Ở đúng khổ thiết kế <b>1440×900</b>: panel <b>hiện</b>, pill nguồn dữ liệu <b>ẩn</b>, breadcrumb <b>rút gọn</b>. Ảnh chụp nghiệm thu phải khớp trạng thái này.</p>
+
+      <h4>Sticky và z-index</h4>
+      <div class="t-wrap">
+        <table class="sp">
+          <thead><tr><th>Thành phần</th><th class="mono">position</th><th class="num">z-index</th><th>Nền bắt buộc</th></tr></thead>
+          <tbody>
+            <tr><td>List/GroupHeader</td><td class="mono">sticky · top:0</td><td class="num">5</td><td><code>--container</code> + lớp tint, nếu để trong suốt sẽ thấy hàng chạy xuyên qua</td></tr>
+            <tr><td>Panel/Header</td><td class="mono">sticky · top:0</td><td class="num">5</td><td><code>--container</code></td></tr>
+            <tr><td>Lưới dọc biểu đồ</td><td class="mono">absolute</td><td class="num">2</td><td>trong suốt, <code>pointer-events:none</code></td></tr>
+            <tr><td>Header/Primary · FilterBar</td><td class="mono">static</td><td class="num">—</td><td>Không cần sticky vì nằm ngoài vùng cuộn</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="tx">Toàn hệ thống chỉ dùng ba mức z-index: <b>2</b> cho lớp phủ trang trí, <b>5</b> cho header dính, <b>20</b> trở lên dành cho lớp nổi (dropdown, modal) khi bổ sung sau. Không tạo thêm mức trung gian.</p>
+    </div>
+  </section>
+
+  <!-- ═════════ 03 · COMPONENT · BASE ═════════ -->
+  <section class="sec" id="s3">
+    <div class="sec-h"><span class="no">03</span><h2>Component · Base</h2></div>
+    <p class="lead">Các thành phần nguyên tử. Mỗi khối dưới đây gồm: <b>demo thật</b> (render bằng chính CSS sản phẩm), <b>bảng đặc tả</b> và <b>mã CSS</b>. Tên in ở góc phải là tên component trong Figma — trùng thuộc tính <code>data-fig</code> trong HTML.</p>
+
+    <!-- Pill -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Pill<em>nhãn phụ, mã đơn vị, cảnh báo ngắn</em></span><span class="tags"><span class="tag">Data/Pill</span><span class="tag b">.pill</span></span></div>
+      <div class="cmp-demo">
+        <div class="cmp-row">
+          <span class="pill">P.CNTT</span>
+          <span class="pill"><i class="dot-sm" style="background:var(--st-cyan)"></i>Lớp B</span>
+          <span class="pill ok">Đạt</span>
+          <span class="pill warn">Chờ xác minh</span>
+          <span class="pill danger">Thiếu minh chứng</span>
+          <span class="pill solid" style="background:rgba(94,106,210,.12);color:var(--st-b)">19/30 KPI</span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:110px">Thuộc tính</th><th>Giá trị</th></tr></thead>
+            <tbody>
+              <tr><td>Kích thước</td><td class="mono">padding:1px 7px · font 11 / 16 · border-radius 999</td></tr>
+              <tr><td>Mặc định</td><td class="mono">border:1px solid var(--border) · color:var(--muted-fg)</td></tr>
+              <tr><td>ok</td><td class="mono">color:var(--st-a-ink) · border-color:rgba(76,183,130,.35)</td></tr>
+              <tr><td>warn</td><td class="mono">color:var(--st-c-ink) · border-color:rgba(242,201,76,.45)</td></tr>
+              <tr><td>danger</td><td class="mono">color:var(--st-d-ink) · border-color:rgba(235,87,87,.35)</td></tr>
+              <tr><td>solid</td><td class="mono">border:0 · padding:2px 8px · font-weight:500</td></tr>
+              <tr><td>Có chấm</td><td>Chèn <code>&lt;i class="dot-sm"&gt;</code> 6px làm phần tử đầu, gap 5px</td></tr>
+              <tr><td>opt</td><td><code>display:none</code>, chỉ hiện từ 1600px — dùng cho nhãn phụ được phép ẩn ở màn hẹp</td></tr>
+              <tr><td>Không co</td><td class="mono">flex:none · white-space:nowrap</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- StatusTag -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">StatusTag<em>xếp loại và trạng thái nộp phiếu</em></span><span class="tags"><span class="tag">Data/StatusTag</span><span class="tag b">.status</span></span></div>
+      <div class="cmp-demo">
+        <div class="demo-lb">Xếp loại — 4 biến thể</div>
+        <div class="cmp-row" style="gap:20px">
+          <span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>A · HTXS</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-b)"></i>B · HTT</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-c)"></i>C · HT</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-d)"></i>D · CHT</span>
+        </div>
+        <div class="demo-lb" style="margin-top:16px">Trạng thái nộp phiếu — 6 biến thể</div>
+        <div class="cmp-row" style="gap:20px">
+          <span class="status"><i class="dot-sm" style="background:var(--st-gray)"></i>Chưa nhập</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-orange)"></i>Nháp</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-b)"></i>Chờ duyệt</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-cyan)"></i>Đang thẩm định</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-d)"></i>Bị trả lại</span>
+          <span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>Đã duyệt</span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <pre class="code">.status { display:inline-flex; align-items:center; gap:6px; font-size:12px; white-space:nowrap }
+.dot-sm { width:6px; height:6px; border-radius:999px; flex:none; display:inline-block }</pre>
+        <p class="tx"><b>Luôn có nhãn chữ đi kèm chấm màu.</b> Không bao giờ dùng riêng chấm để biểu thị trạng thái — trừ trong ô heatmap, nơi con số đã mang thông tin.</p>
+      </div>
+    </div>
+
+    <!-- ProgressTrack -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">ProgressTrack<em>mức đạt kèm vạch mốc mục tiêu</em></span><span class="tags"><span class="tag">Data/ProgressTrack</span><span class="tag b">.trk</span></span></div>
+      <div class="cmp-demo">
+        <div class="demo-lb">Có vạch mốc 75% — mặc định</div>
+        <div class="cmp-row" style="gap:26px">
+          <span style="width:200px;display:flex;align-items:center;gap:8px"><span class="trk"><i style="width:92%;background:var(--st-a)"></i></span><span class="trk-v mono">92%</span></span>
+          <span style="width:200px;display:flex;align-items:center;gap:8px"><span class="trk"><i style="width:78%;background:var(--st-b)"></i></span><span class="trk-v mono">78%</span></span>
+          <span style="width:200px;display:flex;align-items:center;gap:8px"><span class="trk"><i style="width:68%;background:var(--st-c)"></i></span><span class="trk-v mono">68%</span></span>
+        </div>
+        <div class="demo-lb" style="margin-top:16px">Không vạch mốc — dùng khi thanh biểu diễn phân bố, không phải mức đạt</div>
+        <div class="cmp-row" style="gap:26px">
+          <span style="width:200px;display:flex;align-items:center;gap:8px"><span class="trk no-mark"><i style="width:41%;background:var(--st-d)"></i></span><span class="trk-v mono">41%</span></span>
+          <span style="width:200px;display:flex;align-items:center;gap:8px"><span class="gp-trk"><i style="width:71.8%;background:var(--st-c)"></i></span><span class="gp-ct mono">19/30</span></span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <pre class="code">.trk        { flex:1; height:5px; border-radius:3px; background:var(--track); position:relative }
+.trk i      { display:block; height:100%; border-radius:3px }          <span class="c">/* width:% ; background: màu xếp loại */</span>
+.trk::after { content:""; position:absolute; left:75%; top:-4px; bottom:-4px;
+              width:1.5px; background:var(--muted-fg); opacity:.85; border-radius:1px }
+.trk.no-mark::after{ display:none }
+.trk-v      { font-size:11px; color:var(--muted-fg); width:34px; text-align:right; flex:none }</pre>
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:150px">Điểm cần lưu</th><th>Yêu cầu</th></tr></thead>
+            <tbody>
+              <tr><td>Vạch mốc</td><td>Vẽ bằng <code>::after</code>, <b>tràn ra ngoài 4px trên và dưới</b> nên nó cao 13px trong khi thanh chỉ 5px. Đây là dấu hiệu thị giác chính của ngưỡng 75% — không được bỏ.</td></tr>
+              <tr><td>Chặn trên</td><td><code>width: Math.min(pct,100) + '%'</code> — giá trị vượt 100% vẫn dừng ở mép.</td></tr>
+              <tr><td>Màu thanh</td><td>Theo xếp loại của chính giá trị đó, qua <code>clsOf()</code>. Không dùng một màu chung.</td></tr>
+              <tr><td>Giá trị %</td><td>Bề rộng cố định 34px, căn phải, mono — để các hàng thẳng cột.</td></tr>
+              <tr><td>Biến thể panel</td><td><code>.gp-trk</code> cao 4px, radius 2px, vạch mốc tràn 3px, opacity .8</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delta -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Delta<em>chênh lệch so với kỳ trước</em></span><span class="tags"><span class="tag">Data/Delta</span><span class="tag b">.up .down .flat</span></span></div>
+      <div class="cmp-demo">
+        <div class="cmp-row" style="gap:26px">
+          <span class="mono up" style="font-size:11.5px;font-weight:500">▲ 5,1</span>
+          <span class="mono down" style="font-size:11.5px;font-weight:500">▼ 4,7</span>
+          <span class="mono flat" style="font-size:11.5px;font-weight:500">— 0,0</span>
+          <span class="mono flat" style="font-size:11.5px;font-weight:500">—</span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <p class="tx">Ba trạng thái: tăng dùng <code>--st-a-ink</code>, giảm dùng <code>--st-d-ink</code>, không đổi hoặc không có dữ liệu dùng <code>--muted-fg</code>. <b>Ký tự mũi tên là một phần nội dung</b>, không phải icon — nhờ vậy khi người dùng bôi đen copy sang Excel vẫn còn hướng biến động. Kỳ gốc (không có kỳ trước) hiển thị một em dash.</p>
+      </div>
+    </div>
+
+    <!-- Button -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Button</span><span class="tags"><span class="tag">Button</span><span class="tag b">.btn</span></span></div>
+      <div class="cmp-demo">
+        <div class="cmp-row">
+          <button class="btn primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>Gửi phê duyệt</button>
+          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Lưu nháp</button>
+          <button class="btn danger">Trả lại</button>
+          <button class="btn ghost">Huỷ</button>
+          <button class="btn primary" style="opacity:.45;cursor:not-allowed">Disabled</button>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:110px">Biến thể</th><th>Nền</th><th>Viền</th><th>Chữ</th><th>Hover</th></tr></thead>
+            <tbody>
+              <tr><td>primary</td><td class="mono">var(--st-b)</td><td class="mono">var(--st-b)</td><td class="mono">#fff</td><td class="mono">#4F5AC4</td></tr>
+              <tr><td>secondary</td><td class="mono">trong suốt</td><td class="mono">var(--border)</td><td class="mono">kế thừa</td><td class="mono">var(--muted)</td></tr>
+              <tr><td>danger</td><td class="mono">trong suốt</td><td class="mono">rgba(235,87,87,.35)</td><td class="mono">var(--st-d)</td><td class="mono">var(--muted)</td></tr>
+              <tr><td>ghost</td><td class="mono">trong suốt</td><td class="mono">transparent</td><td class="mono">kế thừa</td><td class="mono">var(--muted)</td></tr>
+              <tr><td>disabled</td><td colspan="4" class="mono">opacity:.45 · cursor:not-allowed · giữ nguyên màu nền</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <pre class="code">.btn{ height:30px; padding:0 12px; display:inline-flex; align-items:center; gap:6px;
+      border:1px solid var(--border); border-radius:8px; font-size:12.5px; font-weight:500; white-space:nowrap }
+.btn svg{ width:14px; height:14px; flex:none }
+.btn-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }   <span class="c">/* nhóm nút */</span></pre>
+        <p class="tx">Mỗi màn hình chỉ có <b>một</b> nút primary. Thứ tự trong nhóm: primary trước, phụ trợ sau, huỷ cuối cùng, cách nhau 8px.</p>
+      </div>
+    </div>
+
+    <!-- IconButton / Tab / Chip -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">IconButton · TabPill · FilterChip</span><span class="tags"><span class="tag">Button/Icon</span><span class="tag">Header/TabPill</span><span class="tag">Header/FilterChip</span></span></div>
+      <div class="cmp-demo">
+        <div class="demo-lb">Button/Icon — 28×28, radius 8, chỉ đổi nền khi hover</div>
+        <div class="cmp-row">
+          <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+          <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg></button>
+          <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          <span class="avatar">VP</span>
+        </div>
+        <div class="demo-lb" style="margin-top:16px">Header/TabPill — cao 28, radius tròn, active có viền</div>
+        <div class="cmp-row" style="gap:4px">
+          <span class="tab active">Tổng quan</span>
+          <span class="tab">Xếp hạng <span class="n mono">13</span></span>
+          <span class="tab">Nhóm nhiệm vụ <span class="n mono">8</span></span>
+          <span class="tab">Cảnh báo <span class="n mono">7</span></span>
+        </div>
+        <div class="demo-lb" style="margin-top:16px">Header/FilterChip — cao 26, radius 8</div>
+        <div class="cmp-row" style="gap:6px">
+          <span class="chip"><span class="k">Kỳ</span> Quý II/2027 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip"><span class="k">Lớp</span> Tất cả <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="chip ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Thêm bộ lọc</span>
+          <span class="chip primary">Đang lọc · 2</span>
+        </div>
+        <div class="demo-lb" style="margin-top:16px">Header/SearchField — cao 28, tối thiểu 190px</div>
+        <div class="cmp-row">
+          <span class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Tìm đơn vị, mã KPI…<span class="kbd mono">⌘K</span></span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th>Component</th><th class="num">Cao</th><th>Padding</th><th>Radius</th><th>Đặc điểm riêng</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">.icon-btn</td><td class="num">28</td><td class="mono">—</td><td class="mono">8</td><td>Vuông 28×28, icon 16, màu <code>--muted-fg</code>, hover đổi sang <code>--fg</code></td></tr>
+              <tr><td class="mono">.tab</td><td class="num">28</td><td class="mono">0 10px</td><td class="mono">999</td><td>Mặc định viền trong suốt; active mới có <code>border-color:var(--border)</code> và nền <code>--muted</code>. Số đếm <code>opacity:.7</code>.</td></tr>
+              <tr><td class="mono">.chip</td><td class="num">26</td><td class="mono">0 9px</td><td class="mono">8</td><td>Nhãn khoá màu <code>--muted-fg</code>, giá trị màu <code>--fg</code>, chevron 12px <code>opacity:.6</code>. Biến thể ghost dùng viền nét đứt.</td></tr>
+              <tr><td class="mono">.search</td><td class="num">28</td><td class="mono">0 10px</td><td class="mono">8</td><td>Không phải input thật ở bản dựng — là nút mở bảng lệnh. Phím tắt trong <code>.kbd</code> đẩy sang phải bằng <code>margin-left:auto</code>.</td></tr>
+              <tr><td class="mono">.avatar</td><td class="num">24</td><td class="mono">—</td><td class="mono">999</td><td>Nền <code>--st-b</code>, chữ trắng 10px/600, 2 ký tự viết tắt</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Field -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Form/Field<em>ô nhập, ô khoá, ô có lỗi, ô có đơn vị</em></span><span class="tags"><span class="tag">Form/Field</span><span class="tag b">.field .input</span></span></div>
+      <div class="cmp-demo">
+        <div class="fgrid c3" style="max-width:760px">
+          <div class="field">
+            <label>Giá trị thực hiện <span class="req">*</span></label>
+            <div class="inline-unit"><input class="input" value="1,15"><span class="u">%</span></div>
+            <div class="help">Nhập số thập phân, dùng dấu phẩy</div>
+          </div>
+          <div class="field">
+            <label>Mã KPI</label>
+            <div><input class="input locked" value="A.15" disabled></div>
+            <div class="help">Khoá theo KPI_Master</div>
+          </div>
+          <div class="field">
+            <label>Mức đạt</label>
+            <div><input class="input locked" value="57,5 %" disabled></div>
+            <div class="help err">Dưới ngưỡng 60% → xếp loại D</div>
+          </div>
+        </div>
+        <div class="fgrid c1" style="max-width:760px;margin-top:14px">
+          <div class="field">
+            <label>Ghi chú tự đánh giá</label>
+            <textarea class="textarea" rows="2">Ngân sách quý II giải ngân chậm do vướng thủ tục đấu thầu gói hạ tầng.</textarea>
+            <div class="help ok">Đã lưu nháp lúc 14/07 08:31</div>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:120px">Phần</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td>Nhãn</td><td class="mono">font 11 / 500 · color var(--muted-fg) · margin-bottom 5px</td></tr>
+              <tr><td>Dấu bắt buộc</td><td>Dấu sao màu <code>--st-d</code> đặt sau nhãn, cách một dấu cách</td></tr>
+              <tr><td>Ô nhập</td><td class="mono">height 32 · padding 0 10px · font 13 · border 1px var(--border) · radius 8 · background var(--field)</td></tr>
+              <tr><td>Focus</td><td class="mono">border-color:var(--ring) · outline:none</td></tr>
+              <tr><td>Khoá</td><td class="mono">background:var(--muted) · color:var(--muted-fg) · cursor:not-allowed</td>
+              </tr>
+              <tr><td>Textarea</td><td class="mono">min-height 64 · padding 8px 10px · line-height 1.5 · resize:vertical</td></tr>
+              <tr><td>Help</td><td class="mono">font 11 · margin-top 5 — mặc định muted · <code>.err</code> màu --st-d · <code>.ok</code> màu --st-a</td></tr>
+              <tr><td>Đơn vị inline</td><td>Bọc <code>.inline-unit</code> (position:relative), đơn vị đặt <code>absolute; right:10px; top:50%; translateY(-50%)</code>, <code>pointer-events:none</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tx"><b>Ô khoá vẫn phải đọc được.</b> Dùng nền <code>--muted</code> chứ không giảm opacity — giảm opacity làm chữ tụt dưới ngưỡng tương phản.</p>
+      </div>
+    </div>
+
+    <!-- Callout + Dropzone -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Callout · Dropzone</span><span class="tags"><span class="tag">Feedback/Callout</span><span class="tag">Form/Dropzone</span></span></div>
+      <div class="cmp-demo">
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:820px">
+          <div class="callout info"><span class="ci" style="width:16px;height:16px;color:var(--st-b)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span><div><b>Thông tin</b> — dùng cho hướng dẫn và ghi chú nguồn dữ liệu. Nền <span class="mono">rgba(94,106,210,.06)</span>.</div></div>
+          <div class="callout warn"><span class="ci" style="width:16px;height:16px;color:var(--st-c-ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><div><b>Cảnh báo</b> — chỉ số dưới ngưỡng, sắp tới hạn. Icon dùng màu ink chứ không dùng màu mark.</div></div>
+          <div class="callout err"><span class="ci" style="width:16px;height:16px;color:var(--st-d-ink)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span><div><b>Lỗi</b> — phiếu bị trả lại, thiếu minh chứng bắt buộc.</div></div>
+          <div class="dropzone" style="max-width:420px"><b>Kéo thả tệp minh chứng vào đây</b>PDF · XLSX · PPTX · tối đa 20 MB mỗi tệp</div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <p class="tx">Callout: <code>padding:12px 14px · gap:10px · radius:10 · font 12.5 / 1.5</code>. Icon 16px nằm trong <code>.ci</code> có <code>padding-top:1px</code> để thẳng hàng chữ đầu tiên. Trong thân trang dùng <code>margin:16px 24px</code>; khi lồng trong panel hoặc card thì dùng biến thể <code>.inline</code> với <code>margin:0 0 12px</code>.</p>
+        <p class="tx">Dropzone: viền <b>1.5px dashed</b> (dày hơn viền thường để đọc rõ là vùng thả), <code>padding:22px</code>, chữ chính 13/600 màu <code>--fg</code> hiển thị block, mô tả 12.5 màu <code>--muted-fg</code>.</p>
+      </div>
+    </div>
+
+    <!-- Sidebar items -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Sidebar — OrgSwitcher · NavItem · PeriodCard</span><span class="tags"><span class="tag">Sidebar/*</span><span class="tag b">.org .sb-item .sb-card</span></span></div>
+      <div class="cmp-demo">
+        <div style="width:244px;background:var(--sidebar);border-radius:10px;padding:8px;border:1px solid var(--border)">
+          <button class="org">
+            <span class="org-avatar">VG</span>
+            <span class="org-txt"><span class="n">Đảng bộ VIAGS</span><span class="s">Bộ chỉ số NQ 57 · 2026–2030</span></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;opacity:.5"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+          </button>
+          <div class="sb-label">Dashboard BOD</div>
+          <button class="sb-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="lbl">Tổng quan</span></button>
+          <button class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h13M3 12h9M3 18h15"/><circle cx="20" cy="6" r="1.4"/><circle cx="16" cy="12" r="1.4"/></svg><span class="lbl">Xếp hạng đơn vị</span><span class="cnt mono">13</span></button>
+          <button class="sb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg><span class="lbl">Thông báo</span><span class="badge">3</span></button>
+          <div class="sb-label">Lớp chỉ số</div>
+          <button class="sb-item"><span class="dot" style="background:var(--st-b);margin-left:4px"></span><span class="lbl">Lớp A · Chỉ đạo</span><span class="cnt mono">17</span></button>
+          <button class="sb-item"><span class="dot" style="background:var(--st-cyan);margin-left:4px"></span><span class="lbl">Lớp B · Quản trị</span><span class="cnt mono">37</span></button>
+          <div style="height:8px"></div>
+          <div class="sb-card">
+            <div class="t">Kỳ Quý II/2027</div>
+            <div class="d">12/13 đơn vị đã nộp · Hạn thẩm định 20/07</div>
+            <div class="bar"><i style="width:92.3%"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th>Phần</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">.org</td><td>Cao 40, padding 0 8px, radius 8. Avatar 26×26 radius 6, nền <span class="mono">#C8102E</span> chữ <span class="mono">#F5C518</span> (màu nhận diện tổ chức — <b>không</b> nằm trong token hệ thống). Tên 13/600, phụ đề 11 muted.</td></tr>
+              <tr><td class="mono">.sb-label</td><td>Cao 28, font 11/500, màu <code>--muted-fg</code> — nhãn nhóm điều hướng</td></tr>
+              <tr><td class="mono">.sb-item</td><td>Cao 30, gap 8, radius 8, font 13. Icon 16 <code>opacity:.75</code>. Active: nền <code>--sidebar-accent</code> + <code>font-weight:500</code>, <b>không</b> có vạch chỉ thị bên trái.</td></tr>
+              <tr><td class="mono">.cnt</td><td>Số đếm 11px muted, căn phải, mono</td></tr>
+              <tr><td class="mono">.badge</td><td>Nền <code>--st-d</code>, chữ trắng 10/600, radius tròn, padding 1px 6px — chỉ dùng cho việc cần xử lý</td></tr>
+              <tr><td class="mono">.sb-card</td><td>Viền <code>--sidebar-border</code>, radius 10, padding 12, nền <code>--container</code>. Thanh tiến độ cao 4 radius 2.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stepper + KeyValue + Table -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Stepper · KeyValue · Table</span><span class="tags"><span class="tag">Nav/Stepper</span><span class="tag">Panel/KeyValue</span><span class="tag">Data/Table</span></span></div>
+      <div class="cmp-demo">
+        <div class="demo-lb">Nav/Stepper — quy trình phê duyệt 5 bước</div>
+        <div class="stepper" style="max-width:820px">
+          <div class="step done"><div class="sd">✓</div><div class="sl"></div><div class="sn">Nhập liệu</div><div class="ss">Đầu mối đơn vị · 14/07</div></div>
+          <div class="step done"><div class="sd">✓</div><div class="sl"></div><div class="sn">Tự chấm điểm</div><div class="ss">Đơn vị xác nhận · 14/07</div></div>
+          <div class="step done"><div class="sd">✓</div><div class="sl"></div><div class="sn">Bí thư duyệt</div><div class="ss">15/07 08:30</div></div>
+          <div class="step current"><div class="sd">4</div><div class="sl"></div><div class="sn">Thẩm định</div><div class="ss">Tổ thẩm định · đang xử lý</div></div>
+          <div class="step"><div class="sd">5</div><div class="sl"></div><div class="sn">Chốt kỳ</div><div class="ss">VP Đảng ủy · dự kiến 20/07</div></div>
+        </div>
+        <div class="demo-lb" style="margin-top:20px">Panel/KeyValue</div>
+        <div style="max-width:296px">
+          <div class="kv"><span class="k">Kỳ đánh giá</span><span class="v">Quý II/2027</span></div>
+          <div class="kv"><span class="k">Nguồn dữ liệu</span><span class="v">SharePoint + Excel</span></div>
+          <div class="kv"><span class="k">Làm mới gần nhất</span><span class="v mono">15/07 03:00</span></div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:130px">Component</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">.step</td><td>Chấm 18×18 viền 2px. <b>done</b>: nền + viền <code>--st-a</code>, chữ trắng, ký tự ✓. <b>current</b>: viền + chữ <code>--st-b</code>, nền container. <b>todo</b>: viền <code>--border</code>, chữ muted. Đường nối cao 2px, <code>absolute; left:18px; right:0; top:8px</code>, bước cuối ẩn đường nối.</td></tr>
+              <tr><td class="mono">.kv</td><td>Hai cột, <code>justify-content:space-between</code>, padding dọc 6px, font 12. Khoá muted <code>flex:none</code>, giá trị căn phải weight 500.</td></tr>
+              <tr><td class="mono">.tbl</td><td>Header: font 11/500 muted, padding <code>8px 24px</code>, nền <code>--container</code>, viền dưới <code>--border</code>. Ô: padding <code>9px 24px</code>, <code>vertical-align:top</code>, kẻ chia nhạt 10%. Cột số thêm class <code>.num</code> để căn phải. Hover cả hàng.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tx">Bảng dùng khi có <b>từ 5 cột trở lên</b> hoặc nội dung nhiều dòng; dưới mức đó dùng <code>List/Row</code> vì hàng flex canh cột tốt hơn và có chỗ cho thanh tiến độ.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 04 · COMPONENT · COMPOSITE ═════════ -->
+  <section class="sec" id="s4">
+    <div class="sec-h"><span class="no">04</span><h2>Component · Composite</h2></div>
+    <p class="lead">Thành phần ghép từ nhóm base. Đây là những khối lặp lại nhiều nhất trong 17 màn hình — dựng đúng một lần rồi tái sử dụng, đừng ghép lại thủ công ở từng trang.</p>
+
+    <!-- StatCell -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">StatCell &amp; StatStrip<em>thẻ chỉ số đầu mỗi màn hình</em></span><span class="tags"><span class="tag">Data/StatCell</span><span class="tag">Data/StatStrip</span></span></div>
+      <div class="cmp-demo plain" style="padding:0">
+        <section class="stats c3">
+          <div class="stat">
+            <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg>Điểm bình quân Đảng bộ</div>
+            <div class="val"><span class="mono">78,8</span><small>/100</small><span class="delta up mono">▲ 4,2</span></div>
+            <div class="segbar"><i style="width:24.7%;background:var(--st-b)"></i><i style="width:35.2%;background:var(--st-cyan)"></i><i style="width:18.9%;background:var(--st-orange)"></i></div>
+            <div class="legend"><span><i class="dot-sm" style="background:var(--st-b)"></i>Lớp A <b class="mono">24,7</b></span><span><i class="dot-sm" style="background:var(--st-cyan)"></i>Lớp B <b class="mono">35,2</b></span><span><i class="dot-sm" style="background:var(--st-orange)"></i>Lớp C <b class="mono">18,9</b></span></div>
+            <div class="s">Cao nhất <b style="color:var(--fg)" class="mono">92,4</b> · thấp nhất <b style="color:var(--fg)" class="mono">59,5</b></div>
+          </div>
+          <div class="stat">
+            <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg>Tỷ lệ hoàn thành KPI</div>
+            <div class="val"><span class="mono">70,7</span><small>%</small><span class="delta up mono">▲ 5,3</span></div>
+            <div class="segbar"><i style="width:70.7%;background:var(--st-b)"></i></div>
+            <div class="legend"><span>Đạt mục tiêu <b class="mono">53/75</b></span><span>Đủ minh chứng <b class="mono">61/75</b></span></div>
+            <div class="s">8 KPI quá hạn hoặc chưa nhập</div>
+          </div>
+          <div class="stat">
+            <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="10" width="4" height="11" rx="1"/><rect x="10" y="4" width="4" height="17" rx="1"/><rect x="17" y="14" width="4" height="7" rx="1"/></svg>Cơ cấu xếp loại đơn vị</div>
+            <div class="val">
+              <span style="font-size:19px;display:inline-flex;align-items:baseline;gap:4px"><i class="dot-sm" style="background:var(--st-a)"></i><span style="font-size:12px;font-weight:500;color:var(--muted-fg)">A</span><span class="mono">2</span></span>
+              <span style="width:6px"></span>
+              <span style="font-size:19px;display:inline-flex;align-items:baseline;gap:4px"><i class="dot-sm" style="background:var(--st-b)"></i><span style="font-size:12px;font-weight:500;color:var(--muted-fg)">B</span><span class="mono">6</span></span>
+              <span style="width:6px"></span>
+              <span style="font-size:19px;display:inline-flex;align-items:baseline;gap:4px"><i class="dot-sm" style="background:var(--st-c)"></i><span style="font-size:12px;font-weight:500;color:var(--muted-fg)">C</span><span class="mono">4</span></span>
+              <span style="width:6px"></span>
+              <span style="font-size:19px;display:inline-flex;align-items:baseline;gap:4px"><i class="dot-sm" style="background:var(--st-d)"></i><span style="font-size:12px;font-weight:500;color:var(--muted-fg)">D</span><span class="mono">1</span></span>
+            </div>
+            <div class="segbar"><i style="width:15.4%;background:var(--st-a)"></i><i style="width:46.2%;background:var(--st-b)"></i><i style="width:30.8%;background:var(--st-c)"></i><i style="width:7.6%;background:var(--st-d)"></i></div>
+            <div class="s">13 đơn vị cơ sở</div>
+          </div>
+        </section>
+      </div>
+      <div class="cmp-body">
+        <div class="anat">
+          <span class="i">1</span><span class="d"><b>Nhãn</b> — icon 13px <code>opacity:.7</code> + chữ 11/500 muted, gap 6</span>
+          <span class="i">2</span><span class="d"><b>Giá trị</b> — mono 26/600 letter-spacing -.02em, <code>align-items:baseline</code>, <code>margin-top:8px</code>. Đơn vị đo là <code>&lt;small&gt;</code> 12px muted.</span>
+          <span class="i">3</span><span class="d"><b>Delta</b> — 11.5/500, đẩy sát phải bằng <code>margin-left:auto</code>, màu ink theo hướng biến động</span>
+          <span class="i">4</span><span class="d"><b>SegBar</b> — cao 5px radius 3, <code>margin-top:12px</code>, nền <code>--track</code>, các đoạn <code>width:%</code> nối liền không khe</span>
+          <span class="i">5</span><span class="d"><b>Legend</b> — <code>margin-top:8px</code> gap 12, mỗi mục: chấm 6px + nhãn 11 muted + giá trị <code>&lt;b&gt;</code> màu <code>--fg</code> weight 500</span>
+          <span class="i">6</span><span class="d"><b>Chú thích</b> — 11.5 muted, <code>margin-top:9px</code>, được phép xuống dòng</span>
+        </div>
+        <p class="tx">Các phần 3–6 đều tuỳ chọn. Trong một dải, <b>không bắt buộc các thẻ phải cao bằng nhau</b> — grid tự kéo bằng, phần thừa nằm dưới cùng.</p>
+        <p class="tx"><b>Khi có nhiều số cùng cấp</b> (như thẻ cơ cấu xếp loại) thì hạ cỡ xuống 19px và <b>bắt buộc kèm nhãn chữ A/B/C/D cạnh chấm màu</b> — bốn con số cạnh nhau phân biệt bằng màu là không đủ.</p>
+      </div>
+    </div>
+
+    <!-- Section + Group header -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">SectionHeader · GroupHeader · ThresholdRule</span><span class="tags"><span class="tag">List/SectionHeader</span><span class="tag">List/GroupHeader</span><span class="tag">List/ThresholdRule</span></span></div>
+      <div class="cmp-demo plain" style="padding:0">
+        <div class="list-head">
+          <div class="t">Xếp hạng đơn vị cơ sở <span class="n mono">13</span></div>
+          <div class="r"><span>Ngưỡng đạt <span class="mono">≥ 75</span> điểm</span><span style="opacity:.4">·</span><span>Nguồn Sheet 7 · C5:G18</span></div>
+        </div>
+        <div class="grp-head tint-a">
+          <div class="l">
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="var(--st-a)"><path fill-rule="evenodd" d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm4.1 5.1a1 1 0 0 0-1.2-1.2L5.5 8.3 4.1 6.9a1 1 0 1 0-1.2 1.2l2 2a1 1 0 0 0 1.2 0z"/></svg>
+            <span class="nm">A · Hoàn thành xuất sắc</span><span class="ct mono">2</span>
+          </div>
+          <span class="rule mono">≥ 90 điểm</span>
+        </div>
+        <div class="row">
+          <div class="row-main"><span class="rank mono">01</span><span class="unit">Chi bộ Phòng CNTT</span><span class="pill"><i class="dot-sm" style="background:var(--st-cyan)"></i>P.CNTT</span></div>
+          <div class="col c-trk"><span class="trk"><i style="width:92.4%;background:var(--st-a)"></i></span><span class="trk-v mono">92%</span></div>
+          <div class="col c-lay mono">28,2</div><div class="col c-lay mono">41,4</div><div class="col c-lay mono">22,8</div>
+          <div class="col c-tot mono">92,4</div>
+          <div class="col c-cls"><span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>A · HTXS</span></div>
+          <div class="col c-dt"><span class="mono up">▲ 5,1</span></div>
+        </div>
+        <div class="thr"><span class="thr-l"></span><span class="thr-t">Ngưỡng điều hành <b class="mono">75</b> điểm — phía trên <b>8</b> đơn vị đạt · phía dưới <b>5</b> đơn vị chưa đạt</span><span class="thr-l"></span></div>
+        <div class="grp-head tint-c">
+          <div class="l">
+            <svg viewBox="0 0 14 14" width="14" height="14" fill="none"><rect x="1" y="1" width="12" height="12" rx="6" stroke="var(--st-c)" stroke-width="1.5"/><path fill="var(--st-c)" d="M3.5 3.5 3.5 0A3.5 3.5 0 0 1 7 3.5z" transform="translate(3.5,3.5)"/></svg>
+            <span class="nm">C · Hoàn thành</span><span class="ct mono">4</span>
+          </div>
+          <span class="rule mono">60 – &lt; 75 điểm · chưa đạt ngưỡng</span>
+        </div>
+        <div class="row" style="border-bottom:0">
+          <div class="row-main"><span class="rank mono">09</span><span class="unit">Chi bộ Văn phòng Công ty</span><span class="pill"><i class="dot-sm" style="background:var(--st-gray)"></i>VP CTY</span></div>
+          <div class="col c-trk"><span class="trk"><i style="width:74.6%;background:var(--st-c)"></i></span><span class="trk-v mono">75%</span></div>
+          <div class="col c-lay mono">23,7</div><div class="col c-lay mono">33,3</div><div class="col c-lay mono">17,6</div>
+          <div class="col c-tot mono">74,6</div>
+          <div class="col c-cls"><span class="status"><i class="dot-sm" style="background:var(--st-c)"></i>C · HT</span></div>
+          <div class="col c-dt"><span class="mono down">▼ 0,4</span></div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:150px">Component</th><th class="num">Cao</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">.list-head</td><td class="num">38</td><td>Viền dưới, nền container. Trái: tiêu đề 13/600 + số đếm weight 400 muted. Phải: chú thích 11.5 muted, các mẩu ngăn bằng dấu <span class="mono">·</span> <code>opacity:.4</code>.</td></tr>
+              <tr><td class="mono">.grp-head</td><td class="num">40</td><td><b>Dính khi cuộn.</b> Nền = <code>--container</code> + lớp tint 8%. Trái: Status/Icon 14px + tên xếp loại 13/500 + số đếm 13 muted. Phải: quy tắc ngưỡng 11 muted mono.</td></tr>
+              <tr><td class="mono">.thr</td><td class="num">~30</td><td>Hai đường nét đứt co giãn kẹp một dòng chữ 11 muted ở giữa; số liệu trong chữ dùng <code>&lt;b&gt;</code> màu <code>--fg</code>. Chèn <b>ngay trước nhóm đầu tiên nằm dưới ngưỡng</b> — thường là nhóm C.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note info">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="var(--st-b)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg></span>
+          <div>Header nhóm dính phải có <b>nền đục</b>. Nếu chỉ đặt lớp tint mà quên <code>background:var(--container)</code>, các hàng sẽ chạy xuyên qua header khi cuộn — lỗi hay gặp nhất ở khối này.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Panel — Header · GroupBar · AlertItem</span><span class="tags"><span class="tag">Panel/Header</span><span class="tag">Panel/GroupBar</span><span class="tag">Panel/AlertItem</span></span></div>
+      <div class="cmp-demo plain" style="padding:0">
+        <div style="width:328px;border-right:1px solid var(--border)">
+          <div class="pn-head"><span class="t">Cảnh báo trọng điểm</span>
+            <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <div class="pn-sec">
+            <div class="pn-lbl"><span>Kết quả theo nhóm</span><span class="mono">8</span></div>
+            <button class="gp">
+              <div class="gp-top"><span class="gp-id mono">3</span><span class="gp-nm">CĐS, hạ tầng số, Smart Operations</span><span class="gp-v mono">71,8%</span></div>
+              <div class="gp-bot"><span class="gp-trk"><i style="width:71.8%;background:var(--st-c)"></i></span><span class="gp-ct mono">19/30</span></div>
+            </button>
+            <button class="gp">
+              <div class="gp-top"><span class="gp-id mono">8</span><span class="gp-nm">Nguồn lực tài chính cho CĐS</span><span class="gp-v mono">58,3%</span></div>
+              <div class="gp-bot"><span class="gp-trk"><i style="width:58.3%;background:var(--st-d)"></i></span><span class="gp-ct mono">3/6</span></div>
+            </button>
+          </div>
+          <div class="pn-div"></div>
+          <div class="pn-sec">
+            <div class="pn-lbl"><span>Cần quyết định của BOD</span><span class="mono">7</span></div>
+            <button class="al">
+              <span class="al-ic"><i class="dot-sm" style="background:var(--st-d);width:7px;height:7px"></i></span>
+              <span class="al-b">
+                <span class="al-t"><span class="al-code mono">A.14</span><span class="al-lv hi">CAO</span></span>
+                <span class="al-d">Rủi ro sự cố ATTT nghiêm trọng</span>
+                <span class="al-o">P.CNTT, P.AT-AN-CL · hạn 31/08</span>
+              </span>
+            </button>
+            <button class="al">
+              <span class="al-ic"><i class="dot-sm" style="background:var(--st-c);width:7px;height:7px"></i></span>
+              <span class="al-b">
+                <span class="al-t"><span class="al-code mono">A.04 / A.17</span><span class="al-lv">TB</span></span>
+                <span class="al-d">Trưởng thành số chưa đạt Mức 4</span>
+                <span class="al-o">Ban CĐ, P.CNTT · hạn 31/12</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:130px">Phần</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">.pn-head</td><td>Cao 40, padding ngang <b>16</b> (không phải 24 như thân trang), sticky top 0, nền container, viền dưới. Tiêu đề 13/600 + nút đóng 28×28.</td></tr>
+              <tr><td class="mono">.pn-sec</td><td>Padding <code>12px 16px 16px</code>. Các khối ngăn nhau bằng <code>.pn-div</code> — đường 1px màu <code>--border</code>, chạy hết bề rộng.</td></tr>
+              <tr><td class="mono">.pn-lbl</td><td>Nhãn khối 11/500 muted, có thể kèm số đếm bên phải, <code>margin-bottom:6px</code></td></tr>
+              <tr><td class="mono">.gp</td><td>Nút hai dòng. Dòng trên: ô số 18×18 radius 5 + tên (ellipsis) 12.5 + giá trị 12/600. Dòng dưới: <code>padding-left:26px</code> để thẳng tên ở trên, thanh 4px + tỉ lệ 10.5 muted rộng 40 căn phải. Padding 8, radius 8, nới rộng ra ngoài lề panel bằng <code>margin:0 -8px; width:calc(100% + 16px)</code>.</td></tr>
+              <tr><td class="mono">.al</td><td>Chấm 7px căn trên (<code>padding-top:3px</code>) + thân. Mã KPI 11/600 mono, nhãn mức 9.5/600 trong khung radius 4 (mức CAO đổi màu <code>--st-d</code> + viền đỏ 35%), mô tả 11.5 muted, dòng cuối 11 muted <code>opacity:.85</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 05 · BIỂU ĐỒ ═════════ -->
+  <section class="sec" id="s5">
+    <div class="sec-h"><span class="no">05</span><h2>Biểu đồ &amp; hiển thị dữ liệu</h2></div>
+    <p class="lead">Quy tắc chung: <b>màu chỉ nằm ở hình vẽ, không nằm ở chữ</b>; mọi biểu đồ có mốc mục tiêu đều vẽ vạch 75% bằng nét đứt; nhãn trục và giá trị dùng mono. Biểu đồ đường và sơ đồ dựng bằng SVG thuần — không nạp thư viện.</p>
+
+    <!-- GroupResults -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Chart/GroupResults<em>thanh ngang, nhãn dài, có mốc mục tiêu</em></span><span class="tags"><span class="tag">Chart/GroupResults</span><span class="tag b">DOM · không phải SVG</span></span></div>
+      <div class="cmp-demo plain" style="padding:0">
+        <div class="gchart" style="padding:14px 24px 10px">
+          <div class="gc-lines" style="left:286px;right:134px;top:14px;bottom:34px"><i style="left:25%"></i><i style="left:50%"></i><i class="t" style="left:75%"></i><i style="left:100%"></i></div>
+          <span class="gc-lbl"><span class="gc-num mono">1</span><span class="gc-nm">Tăng cường lãnh đạo của Đảng</span></span>
+          <span class="gc-bar"><i style="width:94.2%;background:var(--st-a)"></i></span>
+          <span class="gc-end"><b class="mono">94,2%</b><span class="gc-ct mono">7/7</span></span>
+
+          <span class="gc-lbl"><span class="gc-num mono">3</span><span class="gc-nm">CĐS, hạ tầng số, Smart Operations</span></span>
+          <span class="gc-bar"><i style="width:71.8%;background:var(--st-c)"></i></span>
+          <span class="gc-end"><b class="mono">71,8%</b><span class="gc-ct mono">19/30</span></span>
+
+          <span class="gc-lbl"><span class="gc-num mono">7</span><span class="gc-nm">An toàn thông tin, an ninh dữ liệu</span></span>
+          <span class="gc-bar"><i style="width:83.1%;background:var(--st-b)"></i></span>
+          <span class="gc-end"><b class="mono">83,1%</b><span class="gc-ct mono">8/10</span></span>
+
+          <span class="gc-lbl"><span class="gc-num mono">8</span><span class="gc-nm">Nguồn lực tài chính cho CĐS</span></span>
+          <span class="gc-bar"><i style="width:58.3%;background:var(--st-d)"></i></span>
+          <span class="gc-end"><b class="mono">58,3%</b><span class="gc-ct mono">3/6</span></span>
+
+          <span></span>
+          <div class="gc-axis"><span style="left:0%">0</span><span style="left:25%">25</span><span style="left:50%">50</span><span style="left:75%">75</span><span style="left:100%">100%</span></div>
+          <span></span>
+        </div>
+        <div class="chart-legend" style="padding:2px 24px 16px">
+          <span><i class="dot-sm" style="background:var(--st-a)"></i>A · HTXS ≥ 90 điểm</span>
+          <span><i class="dot-sm" style="background:var(--st-b)"></i>B · HTT 75 – &lt; 90</span>
+          <span><i class="dot-sm" style="background:var(--st-c)"></i>C · HT 60 – &lt; 75</span>
+          <span><i class="dot-sm" style="background:var(--st-d)"></i>D · CHT &lt; 60</span>
+          <span><i class="lg-line" style="background:var(--muted-fg);opacity:.5"></i>Mục tiêu 75%</span>
+        </div>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:140px">Yếu tố</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td>Lưới cột</td><td class="mono">248px · minmax(0,1fr) · 96px — gap 9px dọc, 14px ngang</td></tr>
+              <tr><td>Thanh bar</td><td>Cao 10, radius 5, nền <code>--track</code>, phần đầy tô theo xếp loại của chính giá trị</td></tr>
+              <tr><td>Lưới dọc</td><td>4 vạch tại 25 / 50 / 75 / 100%. Vạch thường: 1px màu <code>--fg</code> <code>opacity:.13</code>. Vạch 75%: <b>1.5px nét đứt</b> màu <code>--muted-fg</code> <code>opacity:.8</code>. Nằm <b>đè lên</b> thanh bar (z-index 2).</td></tr>
+              <tr><td>Nhấn khi hover</td><td>Hover cả biểu đồ → mọi thanh xuống <code>opacity:.55</code>; hover đúng một thanh → thanh đó về <code>opacity:1</code>. Hiệu ứng làm nổi hàng đang trỏ mà không cần tooltip.</td></tr>
+              <tr><td>Giá trị</td><td>Cột phải: % ở 12.5/600 màu <code>--fg</code>, tỉ lệ hoàn thành 11 muted — <b>không tô màu chữ theo chuỗi</b></td></tr>
+              <tr><td>Tooltip</td><td>Dùng thuộc tính <code>title</code> gốc của trình duyệt, nội dung: tên đầy đủ + % + số KPI đạt</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Heatmap + Line -->
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Chart/Heatmap · Chart/LineTrend</span><span class="tags"><span class="tag">Chart/Heatmap</span><span class="tag">Chart/LineTrend</span></span></div>
+      <div class="cmp-demo plain">
+        <div class="demo-lb">Heatmap — ô 26×26, khe 3px, radius 6</div>
+        <table class="heat">
+          <tr><th class="rowh"></th><th class="colh">P.CNTT</th><th class="colh">CN TSN</th><th class="colh">P.KHĐT</th><th class="colh">VP CTY</th><th class="colh">TT SCBD</th><th class="rowh" style="padding-left:8px">TB</th></tr>
+          <tr><th class="rowh">1. Tăng cường lãnh đạo</th>
+            <td style="background:var(--st-a)">98</td><td style="background:var(--st-a)">95</td><td style="background:var(--st-b)">88</td><td style="background:var(--st-b)">82</td><td style="background:var(--st-c)">71</td>
+            <th class="rowh mono" style="padding-left:8px">87</th></tr>
+          <tr><th class="rowh">3. CĐS, hạ tầng số</th>
+            <td style="background:var(--st-b)">84</td><td style="background:var(--st-b)">82</td><td style="background:var(--st-c)">73</td><td style="background:var(--st-c)">66</td><td style="background:var(--st-d)">54</td>
+            <th class="rowh mono" style="padding-left:8px">72</th></tr>
+          <tr><th class="rowh">8. Nguồn lực tài chính</th>
+            <td style="background:var(--st-c)">68</td><td style="background:var(--st-c)">64</td><td style="background:var(--st-d)">58</td><td style="background:var(--st-d)">55</td><td style="background:var(--st-d)">44</td>
+            <th class="rowh mono" style="padding-left:8px">58</th></tr>
+        </table>
+      </div>
+      <div class="cmp-body">
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:140px">Yếu tố</th><th>Đặc tả</th></tr></thead>
+            <tbody>
+              <tr><td>Ô</td><td class="mono">26×26 · radius 6 · font 10/600 · color:#fff · text-align:center</td></tr>
+              <tr><td>Khe</td><td class="mono">border-collapse:separate; border-spacing:3px</td></tr>
+              <tr><td>Tiêu đề cột</td><td class="mono">writing-mode:vertical-rl; transform:rotate(180deg); height:78px; font-size:10.5</td></tr>
+              <tr><td>Tiêu đề hàng</td><td>Căn trái, 12px màu <code>--fg</code> weight 400, <code>padding-right:10px</code>, không xuống dòng</td></tr>
+              <tr><td>Màu ô</td><td>Bốn màu xếp loại, <b>không phải thang liên tục</b> — người đọc tra được ngay về nhóm nào. Con số in trong ô là kênh thông tin thứ hai, bắt buộc giữ.</td></tr>
+              <tr><td>Chữ trắng</td><td>Trên nền vàng <span class="mono">#F2C94C</span> chữ trắng chỉ đạt ~1,6:1 — chấp nhận được <b>chỉ vì</b> đây là nhãn trang trí lặp lại giá trị đã có ở tooltip và cột TB. Nếu bỏ cột TB thì phải đổi chữ ô vàng sang <code>#09090B</code>.</td></tr>
+              <tr><td>Cuộn ngang</td><td>Bọc trong <code>overflow-x:auto</code>; với 13 đơn vị bảng rộng ~430px nên thực tế không cuộn ở khổ 1440.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h4>Chart/LineTrend — SVG viewBox 1000×250</h4>
+        <div class="t-wrap">
+          <table class="sp">
+            <thead><tr><th style="width:150px">Đường</th><th>Nét vẽ</th><th>Ý nghĩa</th></tr></thead>
+            <tbody>
+              <tr><td>Thực hiện</td><td class="mono">stroke:var(--st-b) · width 2.2 · liền</td><td>Số liệu đã chốt; điểm nút bán kính 3.5 tô đặc, viền <code>--container</code> 2px</td></tr>
+              <tr><td>Dự báo</td><td class="mono">stroke:var(--st-b) · width 1.8 · dash 4 4 · opacity .65</td><td>Nối tiếp từ điểm thực hiện cuối; điểm nút rỗng bán kính 3</td></tr>
+              <tr><td>Mục tiêu</td><td class="mono">stroke:var(--st-gray) · width 1.5 · dash 5 4</td><td>Đường tham chiếu, luôn ở dưới cùng thứ tự vẽ</td></tr>
+              <tr><td>Vùng nền</td><td class="mono">fill:var(--st-b) · fill-opacity .10</td><td>Chỉ tô dưới phần thực hiện, không tô dưới dự báo</td></tr>
+              <tr><td>Mốc sự kiện</td><td class="mono">stroke:var(--st-orange) · dash 2 3 · opacity .45</td><td>Vạch dọc tại năm có mốc quan trọng</td></tr>
+              <tr><td>Lưới ngang</td><td class="mono">stroke:var(--border) · dash 3 3</td><td>Tại 60/70/80/90/100; nhãn 10px muted căn phải cách trục 8px</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tx">Lề vẽ: trái 42 · phải 16 · trên 14 · dưới 26. Trục Y không bắt đầu từ 0 mà từ <b>55</b> — có chủ ý, vì mọi giá trị nằm trong dải 60–100; phải ghi rõ mốc đầu trục để người đọc không hiểu nhầm độ dốc.</p>
+      </div>
+    </div>
+
+    <div class="cmp">
+      <div class="cmp-h"><span class="n">Quy tắc chung cho mọi biểu đồ</span></div>
+      <div class="cmp-body">
+        <ul class="tx" style="margin-top:14px">
+          <li><b>Không dùng màu làm kênh thông tin duy nhất.</b> Mọi biểu đồ đều có nhãn chữ hoặc con số đi kèm.</li>
+          <li><b>Không dùng gradient, không đổ bóng, không hiệu ứng 3D.</b> Thanh và đường đều phẳng.</li>
+          <li><b>Không vẽ biểu đồ tròn.</b> Phân bố dùng SegBar ngang; so sánh hạng mục dùng thanh ngang.</li>
+          <li><b>Thứ tự vẽ:</b> lưới → vùng nền → đường tham chiếu → đường dự báo → đường thực hiện → điểm nút → nhãn. Dữ liệu thật luôn nằm trên cùng.</li>
+          <li><b>Số liệu rỗng bỏ trắng</b>, không nội suy và không vẽ về 0.</li>
+          <li><b>Màu lấy từ biến CSS</b> (<code>fill="var(--st-b)"</code>) để SVG tự đổi theo sáng/tối.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ 06 · TRẠNG THÁI ═════════ -->
+  <section class="sec" id="s6">
+    <div class="sec-h"><span class="no">06</span><h2>Trạng thái &amp; tương tác</h2></div>
+    <p class="lead">Hệ thống cố ý <b>không có transition</b>. Đổi trạng thái diễn ra tức thì — đúng cách Linear và Circle làm, để thao tác trên bảng dữ liệu dày cảm giác nhanh. Nếu thêm hiệu ứng, giới hạn ở <code>background-color</code> và tối đa <code>120ms</code>.</p>
+
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th>Thành phần</th><th>Hover</th><th>Active / Selected</th><th>Disabled</th></tr></thead>
+        <tbody>
+          <tr><td>Hàng danh sách</td><td class="mono">bg rgba(113,113,122,.05)</td><td>—</td><td>—</td></tr>
+          <tr><td>Tên đơn vị trong hàng</td><td class="mono">underline · offset 2px</td><td>—</td><td>—</td></tr>
+          <tr><td>Mục điều hướng</td><td class="mono">bg var(--sidebar-accent)</td><td class="mono">bg var(--sidebar-accent) + weight 500</td><td>—</td></tr>
+          <tr><td>Tab</td><td class="mono">bg var(--muted) · color var(--fg)</td><td class="mono">bg var(--muted) + border var(--border)</td><td>—</td></tr>
+          <tr><td>Chip lọc</td><td class="mono">bg var(--muted)</td><td class="mono">biến thể primary</td><td>—</td></tr>
+          <tr><td>Nút thường</td><td class="mono">bg var(--muted)</td><td>—</td><td class="mono">opacity .45 · not-allowed</td></tr>
+          <tr><td>Nút primary</td><td class="mono">bg #4F5AC4</td><td>—</td><td class="mono">opacity .45 · not-allowed</td></tr>
+          <tr><td>Nút icon</td><td class="mono">bg var(--sidebar-accent) · color var(--fg)</td><td>—</td><td>—</td></tr>
+          <tr><td>Ô nhập</td><td>—</td><td class="mono">focus: border-color var(--ring)</td><td class="mono">bg var(--muted) · color var(--muted-fg)</td></tr>
+          <tr><td>Mục trong panel</td><td class="mono">bg var(--muted)</td><td>—</td><td>—</td></tr>
+          <tr><td>Thanh biểu đồ</td><td class="mono">các thanh khác → opacity .55</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Trạng thái dữ liệu</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th style="width:150px">Tình huống</th><th>Hiển thị</th></tr></thead>
+        <tbody>
+          <tr><td>Chưa có số</td><td>Em dash <span class="mono">—</span> màu <code>--muted-fg</code>. Thanh tiến độ vẽ rãnh rỗng, không ẩn.</td></tr>
+          <tr><td>Chưa nhập liệu</td><td>StatusTag chấm <code>--st-gray</code> + nhãn "Chưa nhập"; điểm hiển thị <span class="mono">0</span>, không để trống.</td></tr>
+          <tr><td>Bị trả lại</td><td>StatusTag đỏ + pill <code>.danger</code> nêu lý do ngay trong hàng, không giấu vào tooltip.</td></tr>
+          <tr><td>Quá hạn</td><td>Ngày hạn đổi sang <code>--st-d-ink</code>, giữ nguyên định dạng mono.</td></tr>
+          <tr><td>Danh sách rỗng</td><td>Ẩn luôn cả header nhóm — không render nhóm không có phần tử.</td></tr>
+          <tr><td>Đang tải</td><td>Chưa đặc tả ở bản này. Khi bổ sung: dùng khối xám <code>--muted</code> đúng kích thước thật, <b>không</b> dùng spinner giữa màn hình.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═════════ 07 · A11Y ═════════ -->
+  <section class="sec" id="s7">
+    <div class="sec-h"><span class="no">07</span><h2>Khả năng tiếp cận</h2></div>
+    <p class="lead">Mục tiêu: <b>WCAG 2.1 mức AA</b> cho chữ. Bảng dưới là các cặp màu đã đo — dùng để nghiệm thu, không phải để tham khảo.</p>
+
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th>Chữ</th><th>Nền</th><th class="num">Light</th><th class="num">Dark</th><th>Kết luận</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">--fg</td><td class="mono">--container</td><td class="num">19,3:1</td><td class="num">18,1:1</td><td>Đạt AAA</td></tr>
+          <tr><td class="mono">--muted-fg</td><td class="mono">--container</td><td class="num">4,83:1</td><td class="num">7,52:1</td><td>Đạt AA cho chữ thường</td></tr>
+          <tr><td class="mono">--st-a-ink</td><td class="mono">--container</td><td class="num">5,00:1</td><td class="num">10,21:1</td><td>Đạt AA</td></tr>
+          <tr><td class="mono">--st-c-ink</td><td class="mono">--container</td><td class="num">4,90:1</td><td class="num">11,02:1</td><td>Đạt AA</td></tr>
+          <tr><td class="mono">--st-d-ink</td><td class="mono">--container</td><td class="num">5,43:1</td><td class="num">7,83:1</td><td>Đạt AA</td></tr>
+          <tr><td class="mono">--st-b</td><td class="mono">--container</td><td class="num">5,74:1</td><td class="num">—</td><td>Đạt AA — dùng thẳng cho chữ được</td></tr>
+          <tr><td class="mono">#fff</td><td class="mono">--st-b</td><td class="num">5,74:1</td><td class="num">5,74:1</td><td>Đạt AA — chữ trên nút primary</td></tr>
+          <tr><td class="mono">--st-a</td><td class="mono">--container</td><td class="num">2,50:1</td><td class="num">—</td><td><b>Không đạt</b> — chỉ dùng làm mark</td></tr>
+          <tr><td class="mono">--st-c</td><td class="mono">--container</td><td class="num">1,59:1</td><td class="num">—</td><td><b>Không đạt</b> — chỉ dùng làm mark</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Quy tắc bắt buộc khi code</h4>
+    <ul class="tx">
+      <li><b>Không mã hoá thông tin chỉ bằng màu.</b> Mọi xếp loại luôn kèm nhãn chữ (A · HTXS) hoặc con số. Biểu đồ luôn có legend chữ.</li>
+      <li><b>Giữ <code>:focus-visible</code></b> với outline 2px màu <code>--ring</code>, offset 1px. Thứ tự tab đi theo thứ tự DOM: sidebar → header → nội dung → panel.</li>
+      <li><b>Phần tử bấm được phải là <code>&lt;button&gt;</code></b>, không phải <code>&lt;div onclick&gt;</code>. Toàn bộ mục điều hướng, mục panel, hàng cảnh báo trong bản dựng đều đã là button.</li>
+      <li><b>Vùng bấm nhỏ nhất là 26×26</b> (chip). Nút icon 28×28. Không tạo vùng bấm nhỏ hơn — chấm 6px không bao giờ là đích bấm.</li>
+      <li><b>Chữ cắt ellipsis phải có <code>title</code></b> chứa nội dung đầy đủ; ô heatmap và thanh biểu đồ cũng vậy.</li>
+      <li><b>Đặt <code>lang="vi"</code></b> ở thẻ <code>html</code> để trình đọc màn hình phát âm đúng.</li>
+      <li><b>Bảng dữ liệu dùng <code>&lt;table&gt;</code> thật</b> khi là bảng — có <code>thead</code>, <code>th</code>. Danh sách flex chỉ dùng cho hàng có thanh tiến độ và pill.</li>
+      <li><b>Không tự động làm mới</b> nội dung đang đọc. Dấu thời gian cập nhật hiển thị ở thanh lọc, người dùng tự bấm làm mới.</li>
+    </ul>
+  </section>
+
+  <!-- ═════════ 08 · BÀN GIAO ═════════ -->
+  <section class="sec" id="s8">
+    <div class="sec-h"><span class="no">08</span><h2>Bàn giao cho dev</h2></div>
+
+    <h4>Khối token — copy trực tiếp vào dự án</h4>
+    <pre class="code">:root{
+  --bg:#F7F7F8;   --fg:#09090B;        --container:#FFFFFF;
+  --muted:#F4F4F5; --muted-fg:#71717A; --border:#E4E4E7; --ring:#D4D4D8;
+  --sidebar:#F7F7F8; --sidebar-accent:#F4F4F5; --sidebar-border:#E4E4E7;
+  --track:#F0F0F2; --field:#FFFFFF;
+
+  --st-a:#4CB782; --st-b:#5E6AD2; --st-c:#F2C94C; --st-d:#EB5757;
+  --st-gray:#95A2B3; --st-cyan:#26B5CE; --st-orange:#F2790F;
+  --st-a-ink:#2E7D5B; --st-c-ink:#8A6D1F; --st-d-ink:#C0392F;
+
+  --r-lg:10px; --r-md:8px; --r-sm:6px; --r-full:999px;
+  --h-header:40px; --w-sidebar:244px; --w-panel:328px; --pad-x:24px;
+}
+[data-theme="dark"]{
+  --bg:#09090B;   --fg:#FAFAFA;        --container:#101011;
+  --muted:#27272A; --muted-fg:#A1A1AA; --border:#27272A; --ring:#52525B;
+  --sidebar:#18181B; --sidebar-accent:#27272A; --sidebar-border:#27272A;
+  --track:#27272A; --field:#18181B;
+  --st-a-ink:#5FD39A; --st-c-ink:#E7C158; --st-d-ink:#FF8080;
+}</pre>
+    <p class="tx">Đổi giao diện bằng cách set thuộc tính trên thẻ gốc: <code>document.documentElement.setAttribute('data-theme','dark')</code>. Không có class <code>.dark</code>, không có media query <code>prefers-color-scheme</code> ở bản này — người dùng chọn thủ công.</p>
+
+    <h4>Quy ước đặt tên</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th style="width:150px">Tầng</th><th>Quy ước</th><th>Ví dụ</th></tr></thead>
+        <tbody>
+          <tr><td>Biến CSS</td><td>Kebab-case, tiền tố theo nhóm</td><td class="mono">--st-a-ink · --w-panel</td></tr>
+          <tr><td>Class CSS</td><td>Viết tắt ngắn, không BEM</td><td class="mono">.grp-head · .c-trk · .gp-bot</td></tr>
+          <tr><td>Biến thể</td><td>Class phụ đứng sau class gốc</td><td class="mono">.pill.danger · .btn.primary · .trk.no-mark</td></tr>
+          <tr><td>Component Figma</td><td><span class="mono">Nhóm/TênPascal</span> — ghi trong <code>data-fig</code></td><td class="mono">List/UnitRow · Panel/AlertItem</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Bảng tra ngược component</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th>Tên trong Figma</th><th>Class CSS</th><th>Mục trong tài liệu</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Layout/Sidebar</td><td class="mono">.sidebar</td><td>2.1 · 3</td></tr>
+          <tr><td class="mono">Layout/ContentFrame</td><td class="mono">.shell &gt; .frame</td><td>2.1</td></tr>
+          <tr><td class="mono">Layout/MainScroll</td><td class="mono">.main</td><td>2.1</td></tr>
+          <tr><td class="mono">Layout/InsightPanel</td><td class="mono">.panel</td><td>2.1 · 4</td></tr>
+          <tr><td class="mono">Header/Primary</td><td class="mono">.hdr</td><td>2.1 · 3</td></tr>
+          <tr><td class="mono">Header/FilterBar</td><td class="mono">.subhdr</td><td>2.1 · 3</td></tr>
+          <tr><td class="mono">Header/TabPill</td><td class="mono">.tab</td><td>3</td></tr>
+          <tr><td class="mono">Header/FilterChip</td><td class="mono">.chip</td><td>3</td></tr>
+          <tr><td class="mono">Header/SearchField</td><td class="mono">.search</td><td>3</td></tr>
+          <tr><td class="mono">Sidebar/OrgSwitcher</td><td class="mono">.org</td><td>3</td></tr>
+          <tr><td class="mono">Sidebar/NavItem</td><td class="mono">.sb-item</td><td>3</td></tr>
+          <tr><td class="mono">Sidebar/PeriodCard</td><td class="mono">.sb-card</td><td>3</td></tr>
+          <tr><td class="mono">Data/Pill</td><td class="mono">.pill</td><td>3</td></tr>
+          <tr><td class="mono">Data/StatusTag</td><td class="mono">.status</td><td>3</td></tr>
+          <tr><td class="mono">Data/ProgressTrack</td><td class="mono">.trk · .gp-trk</td><td>3 · 5</td></tr>
+          <tr><td class="mono">Data/Delta</td><td class="mono">.up .down .flat</td><td>3</td></tr>
+          <tr><td class="mono">Data/StatCell · StatStrip</td><td class="mono">.stat · .stats</td><td>4</td></tr>
+          <tr><td class="mono">Data/SegBar · Legend</td><td class="mono">.segbar · .legend</td><td>4</td></tr>
+          <tr><td class="mono">Data/Table</td><td class="mono">.tbl</td><td>3</td></tr>
+          <tr><td class="mono">List/SectionHeader</td><td class="mono">.list-head</td><td>4</td></tr>
+          <tr><td class="mono">List/GroupHeader</td><td class="mono">.grp-head + .tint-*</td><td>4</td></tr>
+          <tr><td class="mono">List/UnitRow · KpiRow · …</td><td class="mono">.row + bộ cột .c-*</td><td>2.3 · 4</td></tr>
+          <tr><td class="mono">List/ThresholdRule</td><td class="mono">.thr</td><td>4</td></tr>
+          <tr><td class="mono">Panel/Header · GroupBar · AlertItem · KeyValue</td><td class="mono">.pn-head · .gp · .al · .kv</td><td>4 · 3</td></tr>
+          <tr><td class="mono">Form/Field · Dropzone</td><td class="mono">.field · .dropzone</td><td>3</td></tr>
+          <tr><td class="mono">Feedback/Callout</td><td class="mono">.callout</td><td>3</td></tr>
+          <tr><td class="mono">Nav/Stepper</td><td class="mono">.stepper</td><td>3</td></tr>
+          <tr><td class="mono">Chart/GroupResults</td><td class="mono">.gchart</td><td>2.5 · 5</td></tr>
+          <tr><td class="mono">Chart/Heatmap</td><td class="mono">.heat</td><td>5</td></tr>
+          <tr><td class="mono">Chart/LineTrend · Sparkline · Funnel</td><td>SVG nội tuyến</td><td>5</td></tr>
+          <tr><td class="mono">Status/Icon</td><td>SVG 14×14</td><td>1.7</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Bảy lỗi hay gặp khi dựng lại</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th class="num" style="width:34px">#</th><th style="width:250px">Triệu chứng</th><th>Nguyên nhân và cách sửa</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Vùng nội dung không cuộn, cả trang bị đẩy dài ra</td><td>Thiếu <code>min-height:0</code> ở <code>.body</code> hoặc <code>min-width:0</code> ở <code>.main</code>. Flex item mặc định không co nhỏ hơn nội dung.</td></tr>
+          <tr><td class="num">2</td><td>Hàng chạy xuyên qua header nhóm khi cuộn</td><td>Header dính thiếu <code>background:var(--container)</code> — lớp tint 8% là màu trong suốt.</td></tr>
+          <tr><td class="num">3</td><td>Lưới dọc biểu đồ lệch khỏi thanh bar</td><td>Đổi bề rộng cột nhãn/giá trị mà chưa tính lại <code>left:286px; right:134px</code> — xem công thức ở §2.5.</td></tr>
+          <tr><td class="num">4</td><td>Cột số trong bảng nhảy khi đổi trang</td><td>Quên class <code>.mono</code> nên mất <code>tnum</code>, chữ số có bề rộng khác nhau.</td></tr>
+          <tr><td class="num">5</td><td>Tên đơn vị dài đẩy vỡ hàng</td><td>Thiếu <code>min-width:0</code> ở <code>.row-main</code> — ellipsis không hoạt động trong flex nếu thiếu dòng này.</td></tr>
+          <tr><td class="num">6</td><td>Vạch mốc 75% biến mất</td><td>Vạch là <code>::after</code> của <code>.trk</code>. Nếu dùng thư viện progress bar khác thì phải vẽ lại bằng một phần tử 1.5px cao 13px.</td></tr>
+          <tr><td class="num">7</td><td>Dark mode có chỗ vẫn nền trắng</td><td>Có nơi viết thẳng <code>#fff</code> thay vì <code>var(--container)</code>. Trừ chữ trên nút primary và chữ trong ô heatmap, mọi màu phải đi qua biến.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Danh mục nghiệm thu</h4>
+    <div class="t-wrap">
+      <table class="sp">
+        <thead><tr><th style="width:180px">Hạng mục</th><th>Tiêu chí đạt</th></tr></thead>
+        <tbody>
+          <tr><td>Token</td><td>Không còn mã màu viết thẳng trong CSS component (trừ <span class="mono">#4F5AC4</span> hover, <span class="mono">#fff</span> trên nền màu, và màu nhận diện tổ chức <span class="mono">#C8102E/#F5C518</span>)</td></tr>
+          <tr><td>Đơn vị</td><td>Không còn <code>rem</code>, <code>oklch()</code>, <code>color-mix()</code> trong CSS thực thi</td></tr>
+          <tr><td>Khổ chuẩn</td><td>Ở 1440×900: panel hiện, pill nguồn dữ liệu ẩn, breadcrumb rút gọn, không có thanh cuộn ngang</td></tr>
+          <tr><td>Sáng / tối</td><td>Chuyển hai chiều, không chớp trắng, mọi khối đọc được ở cả hai chế độ</td></tr>
+          <tr><td>Bàn phím</td><td>Tab đi hết được mọi phần tử tương tác, luôn thấy vòng focus</td></tr>
+          <tr><td>Tương phản</td><td>Đo lại 9 cặp màu ở §7 bằng công cụ kiểm tra, khớp số đã ghi</td></tr>
+          <tr><td>Số liệu</td><td>Dấu thập phân là dấu phẩy, cột số thẳng hàng, giá trị rỗng hiện em dash</td></tr>
+          <tr><td>Cắt chữ</td><td>Mọi nhãn cắt ellipsis đều có <code>title</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="foot">
+      <b>NQ57 · Design System Blueprint v1.0</b><br>
+      Nguồn thiết kế: <span class="mono">ln-dev7/circle</span> — Next.js + shadcn/ui, phong cách Linear. Thang xám theo Tailwind zinc.<br>
+      Bản dựng tham chiếu: <span class="mono">NQ57_Circle_UI.html</span> (17 màn hình, khổ 1440×900). Đặc tả nghiệp vụ và từ điển dữ liệu nằm ở tài liệu riêng.<br>
+      Mọi thay đổi token phải cập nhật đồng thời ở tài liệu này và ở khối <code>:root</code> của bản dựng.
+    </div>
+  </section>
+  </div>
+</main>
+</div>
+<script>
+document.getElementById('themeBtn').onclick=()=>{
+  const d=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',d?'light':'dark');
+};
+/* Đánh dấu mục lục theo vị trí cuộn */
+const links=[...document.querySelectorAll('.toc a')];
+const targets=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const spy=()=>{
+  let cur=targets[0];
+  for(const t of targets){ if(t.getBoundingClientRect().top<=90) cur=t; }
+  links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur.id));
+};
+document.addEventListener('scroll',spy,{passive:true}); spy();
+</script>
+</body>
+</html>
