@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bộ chỉ số NQ 57 · Hệ thống Dashboard & Cổng nhập liệu KPI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════════════
+   NQ57 · CIRCLE UI KIT
+   Nguồn: ln-dev7/circle — app/globals.css + components/**
+   Mọi màu đã quy đổi sang HEX/RGBA (Figma không đọc được oklch / color-mix).
+   Thang xám = Tailwind zinc, đúng bằng giá trị oklch gốc của Circle.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────── TOKENS · Color/Light ───────────────── */
+:root{
+  --bg:#F7F7F8;              /* oklch(.975 .001 286.375) */
+  --fg:#09090B;              /* zinc-950 */
+  --container:#FFFFFF;
+  --muted:#F4F4F5;           /* zinc-100 */
+  --muted-fg:#71717A;        /* zinc-500 */
+  --border:#E4E4E7;          /* zinc-200 */
+  --ring:#D4D4D8;            /* zinc-300 */
+  --sidebar:#F7F7F8;
+  --sidebar-accent:#F4F4F5;
+  --sidebar-border:#E4E4E7;
+  --track:#F0F0F2;
+  --field:#FFFFFF;
+
+  /* Color/Class — bảng trạng thái gốc của Circle */
+  --st-a:#4CB782;   /* A · HTXS ≥90   ← Shipped   */
+  --st-b:#5E6AD2;   /* B · HTT 75–<90 ← Done      */
+  --st-c:#F2C94C;   /* C · HT 60–<75  ← At risk   */
+  --st-d:#EB5757;   /* D · CHT <60    ← Off track */
+  --st-gray:#95A2B3;
+  --st-cyan:#26B5CE;
+  --st-orange:#F2790F;
+
+  /* Color/Class-ink — biến thể DÙNG CHO CHỮ. Màu mark ở trên không đủ tương phản
+     khi làm chữ (#4CB782 = 2,50:1 · #F2C94C = 1,59:1 trên nền trắng).
+     Các giá trị dưới đây đều ≥ 4,5:1 — đạt WCAG AA cho chữ thường. */
+  --st-a-ink:#2E7D5B;   /* 5,00:1 */
+  --st-c-ink:#8A6D1F;   /* 4,90:1 */
+  --st-d-ink:#C0392F;   /* 5,43:1 */
+
+  /* Radius / Size */
+  --r-lg:10px; --r-md:8px; --r-sm:6px; --r-full:999px;
+  --h-header:40px; --w-sidebar:244px; --w-panel:328px; --pad-x:24px;
+}
+/* ───────────────── TOKENS · Color/Dark ───────────────── */
+[data-theme="dark"]{
+  --bg:#09090B;
+  --fg:#FAFAFA;
+  --container:#101011;
+  --muted:#27272A;           /* zinc-800 */
+  --muted-fg:#A1A1AA;        /* zinc-400 */
+  --border:#27272A;
+  --ring:#52525B;
+  --sidebar:#18181B;         /* zinc-900 */
+  --sidebar-accent:#27272A;
+  --sidebar-border:#27272A;
+  --track:#27272A;
+  --field:#18181B;
+  --st-a-ink:#5FD39A;   /* 10,21:1 trên #101011 */
+  --st-c-ink:#E7C158;   /* 11,02:1 */
+  --st-d-ink:#FF8080;   /*  7,83:1 */
+}
+
+/* ───────────────── RESET ───────────────── */
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:Geist,"Be Vietnam Pro",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--fg);font-size:14px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;height:100svh;overflow:hidden;display:flex;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+:focus-visible{outline:2px solid var(--ring);outline-offset:1px;border-radius:6px}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* Type/Mono — bật tnum để cột số thẳng hàng */
+.mono{font-family:"Geist Mono",ui-monospace,SFMono-Regular,monospace;font-feature-settings:"tnum" 1}
+
+/* Figma frame mode — khoá khung 1440×900 để chụp/ xuất đúng khổ artboard */
+body.frame-1440{width:1440px;height:900px;margin:auto;border:1px solid var(--border);overflow:hidden}
+html.frame-host{display:grid;place-items:center;background:var(--bg);height:100svh}
+
+/* ══════════════════════ Layout/Sidebar ══════════════════════ */
+.sidebar{width:var(--w-sidebar);flex:none;background:var(--sidebar);display:flex;flex-direction:column;height:100%}
+.sb-header{padding:8px}
+.org{display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 8px;border-radius:var(--r-md);text-align:left}
+.org:hover{background:var(--sidebar-accent)}
+.org-avatar{width:26px;height:26px;flex:none;border-radius:var(--r-sm);background:#C8102E;color:#F5C518;display:grid;place-items:center;font-size:11px;font-weight:700}
+.org-txt{flex:1;min-width:0}
+.org-txt span{display:block}
+.org-txt .n{font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-txt .s{font-size:11px;color:var(--muted-fg);line-height:1.3}
+.sb-content{flex:1;overflow-y:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:1px}
+.sb-group{margin-top:10px}
+.sb-label{height:28px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:500;color:var(--muted-fg)}
+.sb-item{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:var(--r-md);font-size:13px;width:100%;text-align:left}
+.sb-item:hover{background:var(--sidebar-accent)}
+.sb-item.active{background:var(--sidebar-accent);font-weight:500}
+.sb-item svg{width:16px;height:16px;flex:none;opacity:.75}
+.sb-item .lbl{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-item .cnt{font-size:11px;color:var(--muted-fg)}
+.sb-item .badge{font-size:10px;font-weight:600;background:var(--st-d);color:#fff;border-radius:var(--r-full);padding:1px 6px;line-height:1.5}
+.dot{width:8px;height:8px;border-radius:var(--r-full);flex:none}
+.dot-sm{width:6px;height:6px;border-radius:var(--r-full);flex:none;display:inline-block}
+.sb-footer{padding:8px;display:flex;flex-direction:column;gap:8px}
+.sb-card{border:1px solid var(--sidebar-border);border-radius:var(--r-lg);padding:12px;background:var(--container)}
+.sb-card .t{font-size:12.5px;font-weight:600;line-height:1.3}
+.sb-card .d{font-size:11.5px;color:var(--muted-fg);margin-top:4px;line-height:1.4}
+.sb-card .bar{height:4px;border-radius:2px;background:var(--track);margin-top:10px;overflow:hidden}
+.sb-card .bar i{display:block;height:100%;background:var(--st-b);border-radius:2px}
+.sb-tools{display:flex;align-items:center;justify-content:space-between}
+
+/* Button/Icon */
+.icon-btn{width:28px;height:28px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--muted-fg);flex:none}
+.icon-btn:hover{background:var(--sidebar-accent);color:var(--fg)}
+.icon-btn svg{width:16px;height:16px}
+
+/* ══════════════════════ Layout/ContentFrame ══════════════════════ */
+.shell{flex:1;min-width:0;height:100%;padding:8px 8px 8px 0;overflow:hidden}
+.frame{height:100%;width:100%;background:var(--container);border:1px solid var(--border);border-radius:var(--r-md);display:flex;flex-direction:column;overflow:hidden}
+
+/* Header/Primary */
+.hdr{height:var(--h-header);flex:none;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);gap:16px}
+.hdr-l{display:flex;align-items:center;gap:12px;min-width:0}
+.hdr-r{display:flex;align-items:center;gap:6px;flex:none}
+.crumb{font-size:13px;font-weight:600;white-space:nowrap}
+.crumb .sep,.crumb .sub{display:none}
+@media (min-width:1620px){ .crumb .sep,.crumb .sub{display:inline} }
+.crumb .sep{color:var(--muted-fg);font-weight:400;margin:0 6px}
+.crumb .sub{color:var(--muted-fg);font-weight:400}
+.tabs{display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{height:28px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-full);border:1px solid transparent;font-size:12px;font-weight:500;color:var(--muted-fg);white-space:nowrap}
+.tab:hover{background:var(--muted);color:var(--fg)}
+.tab.active{background:var(--muted);color:var(--fg);border-color:var(--border)}
+.tab .n{font-size:11px;opacity:.7}
+.search{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-md);color:var(--muted-fg);font-size:12px;min-width:190px;background:var(--field)}
+.search svg{width:14px;height:14px;flex:none}
+.kbd{margin-left:auto;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:0 4px;line-height:15px}
+.avatar{width:24px;height:24px;border-radius:var(--r-full);background:var(--st-b);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:600;flex:none}
+
+/* Header/FilterBar */
+.subhdr{height:var(--h-header);flex:none;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);gap:16px}
+.chips{display:flex;align-items:center;gap:6px;overflow:hidden}
+.chip{height:26px;padding:0 9px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12px;white-space:nowrap;flex:none}
+.chip:hover{background:var(--muted)}
+.chip .k{color:var(--muted-fg)}
+.chip svg{width:12px;height:12px;opacity:.6;flex:none}
+.chip.ghost{border-style:dashed;color:var(--muted-fg)}
+.chip.primary{background:var(--st-b);border-color:var(--st-b);color:#fff}
+.chip.primary:hover{background:#4F5AC4}
+.stamp{font-size:11.5px;color:var(--muted-fg);display:flex;align-items:center;gap:6px;white-space:nowrap}
+
+/* Layout/Body */
+.body{flex:1;min-height:0;display:flex;overflow:hidden}
+.main{flex:1;min-width:0;overflow-y:auto}
+.panel{width:var(--w-panel);flex:none;border-left:1px solid var(--border);overflow-y:auto;background:var(--container)}
+
+/* ══════════════════════ Data/StatStrip ══════════════════════ */
+.stats{display:grid;gap:0;border-bottom:1px solid var(--border)}
+.stats.c4{grid-template-columns:repeat(4,1fr)}
+.stats.c3{grid-template-columns:repeat(3,1fr)}
+.stats.c2{grid-template-columns:repeat(2,1fr)}
+.stat{padding:16px var(--pad-x);border-right:1px solid var(--border);min-width:0}
+.stat:last-child{border-right:0}
+.stat .lbl{font-size:11px;font-weight:500;color:var(--muted-fg);display:flex;align-items:center;gap:6px}
+.stat .lbl svg{width:13px;height:13px;opacity:.7;flex:none}
+.stat .val{display:flex;align-items:baseline;gap:6px;margin-top:8px;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1;flex-wrap:wrap}
+.stat .val>span{white-space:nowrap}
+.stat .val small{font-size:12px;font-weight:400;color:var(--muted-fg)}
+.stat .delta{font-size:11.5px;font-weight:500;margin-left:auto;white-space:nowrap}
+.up{color:var(--st-a-ink)} .down{color:var(--st-d-ink)} .flat{color:var(--muted-fg)}
+.segbar{display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--track);margin-top:12px}
+.segbar i{display:block;height:100%}
+.legend{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
+.legend span{font-size:11px;color:var(--muted-fg);display:inline-flex;align-items:center;gap:5px}
+.legend b{color:var(--fg);font-weight:500}
+.sub{font-size:11.5px;color:var(--muted-fg);margin-top:9px}
+
+/* ══════════════════════ List/SectionHeader ══════════════════════ */
+.list-head{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);border-bottom:1px solid var(--border);background:var(--container)}
+.list-head .t{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.list-head .t .n{font-weight:400;color:var(--muted-fg)}
+.list-head .r{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted-fg)}
+
+/* List/GroupHeader — nền tint = màu loại @8% (Circle: `${color}08`) */
+.grp-head{height:var(--h-header);display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-x);position:sticky;top:0;z-index:5;background:var(--container)}
+.grp-head .l{display:flex;align-items:center;gap:8px;min-width:0}
+.grp-head .nm{font-size:13px;font-weight:500}
+.grp-head .ct{font-size:13px;color:var(--muted-fg)}
+.grp-head .rule{font-size:11px;color:var(--muted-fg);white-space:nowrap}
+.tint-a{background:rgba(76,183,130,.08)}
+.tint-b{background:rgba(94,106,210,.08)}
+.tint-c{background:rgba(242,201,76,.10)}
+.tint-d{background:rgba(235,87,87,.08)}
+.tint-gray{background:rgba(149,162,179,.08)}
+.tint-cyan{background:rgba(38,181,206,.08)}
+.tint-orange{background:rgba(242,121,15,.08)}
+
+/* List/Row */
+.row{display:flex;align-items:center;gap:8px;padding:11px var(--pad-x);border-bottom:1px solid rgba(113,113,122,.10);font-size:13px}
+[data-theme="dark"] .row{border-bottom-color:rgba(161,161,170,.10)}
+.row:hover{background:rgba(113,113,122,.05)}
+.row-main{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+.rank{width:24px;height:24px;flex:none;border-radius:var(--r-sm);background:var(--muted);display:grid;place-items:center;font-size:11px;font-weight:500}
+.unit{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit:hover{text-decoration:underline;text-underline-offset:2px}
+.col{flex:none;text-align:right}
+.c-lay{width:44px;color:var(--muted-fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-tot{width:54px;font-weight:600}
+.c-trk{width:112px;display:flex;align-items:center;gap:8px}
+.c-cls{width:88px;display:flex;justify-content:flex-start}
+.c-dt{width:46px;font-size:11.5px;font-weight:500}
+
+/* Data/Pill */
+.pill{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:11px;border:1px solid var(--border);border-radius:var(--r-full);padding:1px 7px;color:var(--muted-fg);white-space:nowrap}
+.pill.danger{color:var(--st-d-ink);border-color:rgba(235,87,87,.35)}
+.pill.warn{color:var(--st-c-ink);border-color:rgba(242,201,76,.45)}
+.pill.ok{color:var(--st-a-ink);border-color:rgba(76,183,130,.35)}
+.pill.solid{border:0;padding:2px 8px;font-weight:500}
+/* Nhãn phụ — ẩn ở màn hẹp, đúng cách Circle làm với `hidden lg:inline-flex` */
+.pill.opt{display:none}
+@media (min-width:1600px){ .pill.opt{display:inline-flex} }
+
+/* Data/ProgressTrack — vạch dọc = ngưỡng mục tiêu 75% */
+.trk{flex:1;height:5px;border-radius:3px;background:var(--track);position:relative}
+.trk i{display:block;height:100%;border-radius:3px}
+.trk::after{content:"";position:absolute;left:75%;top:-4px;bottom:-4px;width:1.5px;background:var(--muted-fg);opacity:.85;border-radius:1px}
+.trk.no-mark::after{display:none}
+.trk-v{font-size:11px;color:var(--muted-fg);width:34px;text-align:right;flex:none}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
+
+/* ══════════════════════ Panel/Insights ══════════════════════ */
+.pn-head{height:var(--h-header);display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--container);z-index:5}
+.pn-head .t{font-size:13px;font-weight:600}
+.pn-sec{padding:12px 16px 16px}
+.pn-lbl{font-size:11px;font-weight:500;color:var(--muted-fg);display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px}
+.pn-div{height:1px;background:var(--border)}
+.gp{display:block;width:calc(100% + 16px);text-align:left;padding:8px;margin:0 -8px;border-radius:var(--r-md)}
+.gp:hover{background:var(--muted)}
+.gp-top{display:flex;align-items:center;gap:8px}
+.gp-id{width:18px;height:18px;flex:none;border-radius:5px;background:var(--muted);display:grid;place-items:center;font-size:10px;font-weight:600}
+.gp-nm{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gp-v{font-size:12px;font-weight:600;flex:none}
+.gp-bot{display:flex;align-items:center;gap:8px;margin-top:6px;padding-left:26px}
+.gp-trk{flex:1;height:4px;border-radius:2px;background:var(--track);position:relative}
+.gp-trk i{display:block;height:100%;border-radius:2px}
+.gp-trk::after{content:"";position:absolute;left:75%;top:-3px;bottom:-3px;width:1.5px;background:var(--muted-fg);opacity:.8;border-radius:1px}
+.gp-ct{font-size:10.5px;color:var(--muted-fg);width:40px;text-align:right;flex:none}
+
+/* Panel/AlertItem */
+.al{display:flex;gap:8px;padding:9px 8px;margin:0 -8px;border-radius:var(--r-md);width:calc(100% + 16px);text-align:left}
+.al:hover{background:var(--muted)}
+.al-ic{width:16px;flex:none;display:flex;justify-content:center;padding-top:3px}
+.al-b{flex:1;min-width:0}
+.al-t{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.al-code{font-size:11px;font-weight:600}
+.al-lv{font-size:9.5px;font-weight:600;border-radius:4px;padding:1px 5px;border:1px solid var(--border);color:var(--muted-fg)}
+.al-lv.hi{color:var(--st-d);border-color:rgba(235,87,87,.35)}
+.al-d{display:block;font-size:11.5px;color:var(--muted-fg);margin-top:3px;line-height:1.35}
+.al-o{display:block;font-size:11px;color:var(--muted-fg);margin-top:4px;opacity:.85}
+
+/* Panel/KeyValue */
+.kv{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;font-size:12px}
+.kv .k{color:var(--muted-fg);flex:none}
+.kv .v{text-align:right;font-weight:500}
+
+/* ══════════════════════ Form ══════════════════════ */
+.form-sec{padding:16px var(--pad-x);border-bottom:1px solid var(--border)}
+.form-sec .h{font-size:13px;font-weight:600;margin-bottom:2px}
+.form-sec .hint{font-size:11.5px;color:var(--muted-fg);margin-bottom:14px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
+.fgrid.c1{grid-template-columns:1fr}
+.fgrid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--muted-fg);margin-bottom:5px}
+.field .req{color:var(--st-d)}
+.input,.textarea,.select{width:100%;height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--field);font-size:13px;outline:none}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--ring)}
+.textarea{height:auto;min-height:64px;padding:8px 10px;line-height:1.5;resize:vertical}
+.input:disabled,.input.locked{background:var(--muted);color:var(--muted-fg);cursor:not-allowed}
+.field .help{font-size:11px;color:var(--muted-fg);margin-top:5px}
+.field .help.err{color:var(--st-d)}
+.field .help.ok{color:var(--st-a)}
+.inline-unit{position:relative}
+.inline-unit .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11.5px;color:var(--muted-fg);pointer-events:none}
+
+/* Button */
+.btn{height:30px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:var(--r-md);font-size:12.5px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--muted)}
+.btn svg{width:14px;height:14px;flex:none}
+.btn.primary{background:var(--st-b);border-color:var(--st-b);color:#fff}
+.btn.primary:hover{background:#4F5AC4}
+.btn.danger{color:var(--st-d);border-color:rgba(235,87,87,.35)}
+.btn.ghost{border-color:transparent}
+.btn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* Dropzone */
+.dropzone{border:1.5px dashed var(--border);border-radius:var(--r-lg);padding:22px;text-align:center;color:var(--muted-fg);font-size:12.5px}
+.dropzone b{display:block;color:var(--fg);font-size:13px;font-weight:600;margin-bottom:4px}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:11px;font-weight:500;color:var(--muted-fg);padding:8px var(--pad-x);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--container)}
+.tbl td{padding:9px var(--pad-x);border-bottom:1px solid rgba(113,113,122,.10);vertical-align:top}
+[data-theme="dark"] .tbl td{border-bottom-color:rgba(161,161,170,.10)}
+.tbl tr:hover td{background:rgba(113,113,122,.05)}
+.tbl td.num,.tbl th.num{text-align:right}
+.tbl .muted{color:var(--muted-fg)}
+
+/* Card */
+.cards{display:grid;gap:12px;padding:16px var(--pad-x)}
+.cards.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cards.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;background:var(--container)}
+.card .ct{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card .cd{font-size:11.5px;color:var(--muted-fg);margin-top:5px;line-height:1.45}
+.card .cv{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-top:10px}
+
+/* Callout */
+.callout{display:flex;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-lg);margin:16px var(--pad-x);font-size:12.5px;line-height:1.5}
+.callout .ci{flex:none;padding-top:1px}
+.callout.inline{margin:0 0 12px}
+.callout b{font-weight:600}
+.callout.warn{background:rgba(242,201,76,.08);border-color:rgba(242,201,76,.35)}
+.callout.info{background:rgba(94,106,210,.06);border-color:rgba(94,106,210,.28)}
+.callout.err{background:rgba(235,87,87,.07);border-color:rgba(235,87,87,.32)}
+
+/* Stepper */
+.stepper{display:flex;padding:16px var(--pad-x);gap:0}
+.step{flex:1;min-width:0;position:relative;padding-right:12px}
+.step .sd{width:18px;height:18px;border-radius:var(--r-full);border:2px solid var(--border);background:var(--container);display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--muted-fg)}
+.step.done .sd{background:var(--st-a);border-color:var(--st-a);color:#fff}
+.step.current .sd{border-color:var(--st-b);color:var(--st-b)}
+.step .sl{height:2px;background:var(--border);position:absolute;left:18px;right:0;top:8px}
+.step.done .sl{background:var(--st-a)}
+.step:last-child .sl{display:none}
+.step .sn{font-size:12px;font-weight:500;margin-top:8px}
+.step .ss{font-size:11px;color:var(--muted-fg);margin-top:2px;line-height:1.4}
+
+/* Timeline */
+.tl{padding:6px var(--pad-x) 16px}
+.tl-item{display:flex;gap:12px;padding:9px 0}
+.tl-rail{width:18px;flex:none;display:flex;flex-direction:column;align-items:center}
+.tl-rail .d{width:9px;height:9px;border-radius:var(--r-full);flex:none;margin-top:5px}
+.tl-rail .l{flex:1;width:1.5px;background:var(--border);margin-top:4px}
+.tl-b{flex:1;min-width:0}
+.tl-t{font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl-m{font-size:11.5px;color:var(--muted-fg);margin-top:3px;line-height:1.45}
+
+/* Heatmap */
+.heat-wrap{padding:12px var(--pad-x) 18px;overflow-x:auto}
+.heat{border-collapse:separate;border-spacing:3px;font-size:11px}
+.heat th{font-weight:500;color:var(--muted-fg);font-size:10.5px;padding:0 2px}
+.heat th.rowh{text-align:left;font-size:12px;color:var(--fg);font-weight:400;padding-right:10px;white-space:nowrap}
+.heat th.colh{writing-mode:vertical-rl;transform:rotate(180deg);height:78px;white-space:nowrap;font-size:10.5px}
+.heat td{width:26px;height:26px;border-radius:var(--r-sm);text-align:center;color:#fff;font-size:10px;font-weight:600}
+
+/* Chart/GroupResults — biểu đồ thanh ngang 8 nhóm nhiệm vụ.
+   Cột: nhãn 248 · vùng vẽ co giãn · giá trị 96. Lưới dọc vẽ đè lên đúng vùng vẽ. */
+.gchart{position:relative;padding:14px var(--pad-x) 10px;display:grid;
+        grid-template-columns:248px minmax(0,1fr) 96px;align-items:center;gap:9px 14px}
+.gc-lines{position:absolute;left:286px;right:134px;top:14px;bottom:34px;pointer-events:none;z-index:2}
+.gc-lines i{position:absolute;top:0;bottom:0;width:1px;background:var(--fg);opacity:.13}
+.gc-lines i.t{width:0;background:none;border-left:1.5px dashed var(--muted-fg);opacity:.8}
+.gc-lbl{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px}
+.gc-num{width:18px;height:18px;flex:none;border-radius:5px;background:var(--muted);
+        display:grid;place-items:center;font-size:10px;font-weight:600}
+.gc-nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc-bar{height:10px;border-radius:5px;background:var(--track);position:relative}
+.gc-bar i{display:block;height:100%;border-radius:5px}
+.gchart:hover .gc-bar i{opacity:.55}
+.gc-bar:hover i{opacity:1}
+.gc-end{display:flex;align-items:baseline;justify-content:flex-end;gap:8px}
+.gc-end b{font-size:12.5px;font-weight:600}
+.gc-ct{font-size:11px;color:var(--muted-fg)}
+.gc-axis{position:relative;height:15px;margin-top:3px}
+.gc-axis span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:var(--muted-fg)}
+.gc-axis span:first-child{transform:none}
+.gc-axis span:last-child{transform:translateX(-100%)}
+
+/* List/ThresholdRule — vạch phân định đạt / chưa đạt ngưỡng điều hành */
+.thr{display:flex;align-items:center;gap:12px;padding:7px var(--pad-x);background:var(--container)}
+.thr-l{flex:1;height:0;border-top:1px dashed var(--border)}
+.thr-t{font-size:11px;color:var(--muted-fg);white-space:nowrap}
+.thr-t b{color:var(--fg);font-weight:600}
+
+/* Chart */
+.chart-wrap{padding:16px var(--pad-x)}
+.chart-legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 var(--pad-x) 12px}
+.chart-legend span{font-size:11.5px;color:var(--muted-fg);display:inline-flex;align-items:center;gap:6px}
+.lg-line{width:16px;height:2px;border-radius:1px;display:inline-block}
+
+/* Diagram (star schema / lineage) */
+.diagram{padding:16px var(--pad-x) 20px;overflow-x:auto}
+.dg-node{fill:var(--container);stroke:var(--border)}
+.dg-t{font-size:11px;font-weight:600;fill:var(--fg)}
+.dg-s{font-size:9.5px;fill:var(--muted-fg)}
+.dg-l{stroke:var(--muted-fg);stroke-opacity:.45;stroke-width:1.2;fill:none}
+
+/* Footnote */
+.foot-note{padding:14px var(--pad-x) 30px;font-size:11px;color:var(--muted-fg);display:flex;gap:20px;flex-wrap:wrap}
+.foot-note b{color:var(--fg);font-weight:500}
+
+@media (max-width:1330px){ .panel{display:none} }
+@media (max-width:1200px){ .sidebar{display:none} .shell{padding:8px} .stats.c4{grid-template-columns:repeat(2,1fr)} }
+</style>
+</head>
+<body>
+<!-- ═══════════ Layout/Sidebar ═══════════ -->
+<aside class="sidebar" data-fig="Layout/Sidebar">
+  <div class="sb-header">
+    <button class="org" data-fig="Sidebar/OrgSwitcher">
+      <span class="org-avatar">VG</span>
+      <span class="org-txt">
+        <span class="n">Đảng bộ VIAGS</span>
+        <span class="s">Bộ chỉ số NQ 57 · 2026–2030</span>
+      </span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;opacity:.5"><path d="m7 15 5 5 5-5M7 9l5-5 5 5"/></svg>
+    </button>
+  </div>
+  <nav class="sb-content" id="nav" data-fig="Sidebar/Nav"></nav>
+  <div class="sb-footer">
+    <div class="sb-card" data-fig="Sidebar/PeriodCard">
+      <div class="t">Kỳ Quý II/2027</div>
+      <div class="d">12/13 đơn vị đã nộp · Hạn thẩm định 20/07</div>
+      <div class="bar"><i style="width:92.3%"></i></div>
+    </div>
+    <div class="sb-tools">
+      <button class="icon-btn" title="Trợ giúp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </button>
+      <div style="display:flex;gap:2px">
+        <button class="icon-btn" id="frameBtn" title="Khoá khung 1440×900 để xuất Figma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16M4 16h16M8 4v16M16 4v16"/></svg>
+        </button>
+        <button class="icon-btn" id="themeBtn" title="Đổi giao diện sáng/tối">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ Layout/ContentFrame ═══════════ -->
+<div class="shell">
+  <div class="frame" data-fig="Layout/ContentFrame">
+    <header class="hdr" id="hdr" data-fig="Header/Primary"></header>
+    <div class="subhdr" id="subhdr" data-fig="Header/FilterBar"></div>
+    <div class="body">
+      <main class="main" id="main" data-fig="Layout/MainScroll"></main>
+      <aside class="panel" id="panel" data-fig="Layout/InsightPanel"></aside>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   1 · ICONS  (stroke 1.8 · 24×24 — đúng bộ lucide mà Circle dùng)
+   ══════════════════════════════════════════════════════════════════════════ */
+const I = (d,w=1.8)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICON = {
+  inbox:   I('<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'),
+  grid:    I('<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>'),
+  rank:    I('<path d="M3 6h13M3 12h9M3 18h15"/><circle cx="20" cy="6" r="1.4"/><circle cx="16" cy="12" r="1.4"/>'),
+  target:  I('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>'),
+  layers:  I('<path d="m12 2 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>'),
+  server:  I('<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>'),
+  alert:   I('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),
+  trend:   I('<path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/>'),
+  check:   I('<circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/>'),
+  users:   I('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/>'),
+  home:    I('<path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-8h6v8"/>'),
+  edit:    I('<path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6"/><path d="M18.4 2.6a2 2 0 0 1 2.8 2.8L12 14.6l-4 1 1-4z"/>'),
+  file:    I('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'),
+  calc:    I('<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v4M8 19h4"/>'),
+  send:    I('<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>'),
+  history: I('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>'),
+  report:  I('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 17v-4M12 17v-6M16 17v-2"/>'),
+  db:      I('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
+  shield:  I('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>'),
+  gavel:   I('<path d="M14 3 21 10"/><path d="m17.5 6.5-11 11"/><path d="M3 21h8"/><path d="m6.5 10.5 7 7"/>'),
+  search:  I('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',2),
+  bell:    I('<path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/>'),
+  chevron: I('<path d="m6 9 6 6 6-6"/>',2),
+  plus:    I('<path d="M12 5v14M5 12h14"/>',2),
+  x:       I('<path d="M18 6 6 18M6 6l12 12"/>',2),
+  sliders: I('<path d="M4 6h16M4 12h10M4 18h6"/>',2),
+  panelL:  I('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>'),
+  down:    I('<path d="M12 3v14"/><path d="m6 13 6 6 6-6"/><path d="M4 21h16"/>'),
+  clock:   I('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  link:    I('<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7L12 19"/>'),
+  refresh: I('<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>'),
+  lock:    I('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+  money:   I('<path d="M12 3v18M4 8h16"/><circle cx="12" cy="14" r="5"/>'),
+  bars:    I('<rect x="3" y="10" width="4" height="11" rx="1"/><rect x="10" y="4" width="4" height="17" rx="1"/><rect x="17" y="14" width="4" height="7" rx="1"/>'),
+  compass: I('<circle cx="12" cy="12" r="9"/><path d="m16.2 7.8-2.9 6.6-6.6 2.9 2.9-6.6z"/>'),
+};
+/* Status/Icon — sao chép nguyên StatusPieIcon / StatusCheckIcon / StatusXIcon của Circle */
+const SICON = {
+  A:`<svg viewBox="0 0 14 14" width="14" height="14" fill="var(--st-a)"><path fill-rule="evenodd" d="M7 0C3.13 0 0 3.13 0 7s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm4.1 5.1a1 1 0 0 0-1.2-1.2L5.5 8.3 4.1 6.9a1 1 0 1 0-1.2 1.2l2 2a1 1 0 0 0 1.2 0z"/></svg>`,
+  B:`<svg viewBox="0 0 14 14" width="14" height="14" fill="none"><rect x="1" y="1" width="12" height="12" rx="6" stroke="var(--st-b)" stroke-width="1.5"/><path fill="var(--st-b)" d="M3.5 3.5 3.5 0A3.5 3.5 0 0 1 7 3.5z" transform="translate(3.5,3.5)"/><path fill="var(--st-b)" d="M3.5 3.5 7 3.5A3.5 3.5 0 0 1 3.5 7z" transform="translate(3.5,3.5)"/></svg>`,
+  C:`<svg viewBox="0 0 14 14" width="14" height="14" fill="none"><rect x="1" y="1" width="12" height="12" rx="6" stroke="var(--st-c)" stroke-width="1.5"/><path fill="var(--st-c)" d="M3.5 3.5 3.5 0A3.5 3.5 0 0 1 7 3.5z" transform="translate(3.5,3.5)"/></svg>`,
+  D:`<svg viewBox="0 0 14 14" width="14" height="14" fill="var(--st-d)"><path fill-rule="evenodd" d="M7 14A7 7 0 1 0 7 0a7 7 0 0 0 0 14zM5 4a.75.75 0 0 0-1 1l2 2-2 2a.75.75 0 1 0 1 1l2-2 2 2a.75.75 0 0 0 1-1L8 7l2-2a.75.75 0 0 0-1-1L7 6z"/></svg>`,
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2 · DATA  — số liệu minh hoạ, cấu trúc đúng Data Dictionary mục 8
+   ══════════════════════════════════════════════════════════════════════════ */
+const CLS = {A:{c:'var(--st-a)',n:'A · HTXS',full:'Hoàn thành xuất sắc',rule:'≥ 90 điểm'},
+             B:{c:'var(--st-b)',n:'B · HTT', full:'Hoàn thành tốt',      rule:'75 – < 90 điểm'},
+             C:{c:'var(--st-c)',n:'C · HT',  full:'Hoàn thành',          rule:'60 – < 75 điểm · chưa đạt ngưỡng'},
+             D:{c:'var(--st-d)',n:'D · CHT', full:'Chưa hoàn thành',     rule:'< 60 điểm · cần xử lý'}};
+const clsOf = p => p>=90?'A':p>=75?'B':p>=60?'C':'D';
+
+/* Org_Unit — 13 đơn vị cơ sở + Đảng bộ cấp Công ty (tách riêng, không xếp hạng) */
+const UNITS=[
+ {r:1, code:'P.CNTT',     name:'Chi bộ Phòng CNTT',            dot:'cyan',  a:28.2,b:41.4,c:22.8,t:92.4,d:+5.1, st:'approved'},
+ {r:2, code:'CN TSN',     name:'Đảng bộ Chi nhánh Tân Sơn Nhất',dot:'b',    a:27.6,b:40.5,c:22.1,t:90.2,d:+6.4, st:'approved'},
+ {r:3, code:'P.AT-AN-CL', name:'Chi bộ Phòng AT-AN-CL',        dot:'orange',a:27.0,b:39.6,c:21.5,t:88.1,d:+3.0, st:'approved'},
+ {r:4, code:'CN NBA',     name:'Đảng bộ Chi nhánh Nội Bài',    dot:'b',     a:26.7,b:38.7,c:21.2,t:86.6,d:+2.2, st:'approved'},
+ {r:5, code:'P.KHĐT',     name:'Chi bộ Phòng KHĐT',            dot:'cyan',  a:26.1,b:37.8,c:20.4,t:84.3,d:+1.5, st:'review'},
+ {r:6, code:'P.TCNL',     name:'Chi bộ Phòng TCNL',            dot:'cyan',  a:25.5,b:36.5,c:19.6,t:81.6,d:-0.3, st:'approved'},
+ {r:7, code:'P.TCKT',     name:'Chi bộ Phòng TCKT',            dot:'cyan',  a:24.9,b:35.1,c:18.9,t:78.9,d:+2.8, st:'review'},
+ {r:8, code:'CN DAD',     name:'Đảng bộ Chi nhánh Đà Nẵng',    dot:'b',     a:24.3,b:34.2,c:18.2,t:76.7,d:-1.1, st:'approved'},
+ {r:9, code:'VP CTY',     name:'Chi bộ Văn phòng Công ty',     dot:'gray',  a:23.7,b:33.3,c:17.6,t:74.6,d:-0.4, st:'review'},
+ {r:10,code:'TT KST',     name:'Đảng bộ Trung tâm KST',        dot:'b',     a:22.8,b:32.4,c:17.1,t:72.3,d:+1.9, st:'approved'},
+ {r:11,code:'P.KD',       name:'Chi bộ phòng Kinh doanh',      dot:'cyan',  a:22.5,b:31.5,c:16.8,t:70.8,d:-2.6, st:'review'},
+ {r:12,code:'TT ĐT',      name:'Chi bộ Trung tâm đào tạo',     dot:'gray',  a:21.9,b:30.2,c:16.2,t:68.3,d:-0.1, st:'returned'},
+ {r:13,code:'TT SCBD',    name:'Đảng bộ Trung tâm SCBD',       dot:'b',     a:19.5,b:26.1,c:13.9,t:59.5,d:-4.7, st:'draft', flag:'Thiếu minh chứng'},
+];
+const COMPANY={code:'ĐB CTY',name:'Đảng bộ (cấp Công ty)',a:24.8,b:34.5,c:19.6,t:78.9,d:+3.4};
+
+/* Task_Group — 8 nhóm nhiệm vụ của Chương trình hành động */
+const GROUPS=[
+ {i:1,name:'Tăng cường lãnh đạo của Đảng về KHCN-ĐMST-CĐS',           short:'Tăng cường lãnh đạo của Đảng',       a:2,b:4, c:1,tot:7, pct:94.2,done:7 },
+ {i:2,name:'Hoàn thiện thể chế, cơ chế, chính sách',                   short:'Hoàn thiện thể chế, chính sách',     a:1,b:2, c:1,tot:4, pct:86.5,done:3 },
+ {i:3,name:'Đẩy mạnh CĐS, ứng dụng công nghệ, hạ tầng số, Smart Operations',short:'CĐS, hạ tầng số, Smart Operations',a:6,b:17,c:7,tot:30,pct:71.8,done:19},
+ {i:4,name:'Phát triển nguồn nhân lực số và văn hóa ĐMST',             short:'Nhân lực số và văn hóa ĐMST',        a:2,b:5, c:2,tot:9, pct:80.4,done:7 },
+ {i:5,name:'Đẩy mạnh nghiên cứu, ứng dụng KHCN và ĐMST',               short:'Nghiên cứu, ứng dụng KHCN',          a:1,b:2, c:2,tot:5, pct:76.0,done:4 },
+ {i:6,name:'Chuyển đổi số gắn với chuyển đổi xanh, bền vững',          short:'CĐS gắn với chuyển đổi xanh',        a:2,b:0, c:2,tot:4, pct:62.5,done:2 },
+ {i:7,name:'Bảo đảm an toàn thông tin và an ninh dữ liệu',             short:'An toàn thông tin, an ninh dữ liệu', a:2,b:5, c:3,tot:10,pct:83.1,done:8 },
+ {i:8,name:'Bảo đảm nguồn lực tài chính cho KHCN-ĐMST-CĐS',            short:'Nguồn lực tài chính cho CĐS',        a:1,b:2, c:3,tot:6, pct:58.3,done:3 },
+];
+
+/* KPI_Master — Lớp A · 17 KPI chiến lược (Σ điểm tối đa 33) */
+const KPI_A=[
+ {id:'A.01',g:1,n:'Tỷ lệ chi/đảng bộ trực thuộc hoàn thành quán triệt NQ 57-NQ/TW',            u:'%',        tgt:'100 %',   t28:'100',t30:'100', act:'100 %',  pt:2.0, max:2,own:'VP Đảng ủy',        src:'Sổ NQ chi bộ',       cyc:'Năm',    ty:'Quá trình'},
+ {id:'A.02',g:1,n:'Tỷ lệ NQ lãnh đạo hằng năm của cấp ủy có chỉ tiêu CĐS – ĐMST',              u:'%',        tgt:'100 %',   t28:'100',t30:'100', act:'100 %',  pt:2.0, max:2,own:'VP Đảng ủy',        src:'Nghị quyết BCH, BTV',cyc:'Năm',    ty:'Quá trình'},
+ {id:'A.03',g:2,n:'Ban hành đủ các quy chế nền tảng (dữ liệu, CNTT, ATTT, sandbox)',           u:'%',        tgt:'100 %',   t28:'100',t30:'100', act:'75,0 %', pt:1.5, max:2,own:'P.CNTT, P.KHĐT',    src:'Quyết định ban hành',cyc:'Năm',    ty:'Kết quả'},
+ {id:'A.04',g:3,n:'Mức trưởng thành số của Công ty (theo mô hình 5 cấp độ)',                   u:'Mức',      tgt:'Mức nền', t28:'4',  t30:'4+',  act:'Mức 3',  pt:2.25,max:3,own:'Ban CĐ',           src:'Đánh giá độc lập',   cyc:'Năm',    ty:'Hiệu quả'},
+ {id:'A.05',g:3,n:'Tỷ lệ quy trình cốt lõi (khai thác, tải, bảo dưỡng, SXKD) đã số hóa',       u:'%',        tgt:'60 %',    t28:'100',t30:'100', act:'61,5 %', pt:2.0, max:2,own:'P.CNTT, các CN',    src:'BPM · VMS/DCS',      cyc:'6 tháng',ty:'Kết quả'},
+ {id:'A.06',g:3,n:'Tỷ lệ quy trình vận hành trên môi trường số',                               u:'%',        tgt:'50 %',    t28:'80', t30:'90',  act:'78,0 %', pt:2.0, max:2,own:'VP Công ty',        src:'e-Office, DOC',      cyc:'Quý',    ty:'Kết quả'},
+ {id:'A.07',g:3,n:'Tỷ lệ quyết định điều hành có ứng dụng AI/Data Analytics hỗ trợ',           u:'%',        tgt:'Mức nền', t28:'40', t30:'>70', act:'38,0 %', pt:1.4, max:2,own:'P.CNTT, Ban CĐ',    src:'DOC, Data Lake',     cyc:'6 tháng',ty:'Hiệu quả'},
+ {id:'A.08',g:4,n:'Tỷ lệ cán bộ quản lý đạt chuẩn kỹ năng số theo khung năng lực số',          u:'%',        tgt:'70 %',    t28:'100',t30:'100', act:'79,2 %', pt:2.0, max:2,own:'P.TCNL, TT ĐT',     src:'HRM',                cyc:'Năm',    ty:'Kết quả'},
+ {id:'A.09',g:4,n:'Tỷ lệ người lao động đạt kỹ năng số cơ bản',                                u:'%',        tgt:'50 %',    t28:'80', t30:'100', act:'58,0 %', pt:2.0, max:2,own:'P.TCNL, TT ĐT',     src:'HRM, LMS',           cyc:'Năm',    ty:'Kết quả'},
+ {id:'A.10',g:5,n:'Số sáng kiến R&D được nghiệm thu và ứng dụng vào SXKD/năm',                 u:'Sáng kiến',tgt:'≥ 10',    t28:'≥10',t30:'≥10', act:'9',      pt:1.8, max:2,own:'P.KHĐT',           src:'HĐ Sáng kiến',       cyc:'Năm',    ty:'Hiệu quả'},
+ {id:'A.11',g:6,n:'Tỷ lệ trang thiết bị mặt đất (GSE) mới sử dụng năng lượng sạch',            u:'%',        tgt:'Mức nền', t28:'≥40',t30:'≥40', act:'22,0 %', pt:0.7, max:1,own:'P.KHĐT, các CN',    src:'EAM/CMMS',           cyc:'Năm',    ty:'Hiệu quả'},
+ {id:'A.12',g:6,n:'Tỷ lệ giảm phát thải CO₂ so với mốc 2025',                                  u:'%',        tgt:'Mức nền', t28:'10', t30:'15',  act:'4,5 %',  pt:0.6, max:1,own:'P.AT-AN-CL',        src:'Báo cáo ESG',        cyc:'Năm',    ty:'Hiệu quả'},
+ {id:'A.13',g:7,n:'Tỷ lệ hệ thống CNTT trọng yếu đạt chuẩn ISO/IEC 27001:2022',                u:'%',        tgt:'50 %',    t28:'100',t30:'100', act:'41,0 %', pt:1.6, max:2,own:'P.CNTT, P.AT-AN-CL',src:'Audit · chứng nhận', cyc:'Năm',    ty:'Kết quả'},
+ {id:'A.14',g:7,n:'Số sự cố ATTT nghiêm trọng/năm (mức 3 trở lên)',                            u:'Sự cố',    tgt:'0',       t28:'0',  t30:'0',   act:'2',      pt:0.6, max:2,own:'P.CNTT, P.AT-AN-CL',src:'SOC/SIEM',           cyc:'6 tháng',ty:'Hiệu quả'},
+ {id:'A.15',g:8,n:'Tỷ lệ ngân sách chi cho KHCN-ĐMST-CĐS / Tổng ngân sách',                    u:'%',        tgt:'3 %',     t28:'5',  t30:'7',   act:'1,15 %', pt:0.8, max:2,own:'P.TCKT, P.KHĐT',    src:'Báo cáo tài chính',  cyc:'Năm',    ty:'Hỗ trợ'},
+ {id:'A.16',g:3,n:'Tỷ lệ ứng dụng cốt lõi triển khai trên nền tảng Cloud (Hybrid/Private)',    u:'%',        tgt:'40 %',    t28:'65', t30:'80',  act:'52,0 %', pt:2.0, max:2,own:'P.CNTT (Hạ tầng)',  src:'CMDB, Cloud portal', cyc:'6 tháng',ty:'Kết quả'},
+ {id:'A.17',g:3,n:'Mức trưởng thành hạ tầng số (Cloud, mạng, dữ liệu, an toàn) – thang 5 cấp', u:'Mức',      tgt:'Mức 3',   t28:'4',  t30:'4+',  act:'Mức 3',  pt:2.0, max:2,own:'P.CNTT, Ban CĐ',    src:'Tự đánh giá + audit',cyc:'Năm',    ty:'Hiệu quả'},
+];
+/* KPI CĐS & CNTT — lát cắt BOD-05: A.16, A.17, B.31–B.37, C.16–C.21 */
+const KPI_IT=[
+ {id:'A.16',n:'Ứng dụng cốt lõi trên Cloud',       tgt:'40 %',       act:'52,0 %', pt:2.0,max:2,own:'P.CNTT (Hạ tầng)'},
+ {id:'A.17',n:'Mức trưởng thành hạ tầng số',       tgt:'Mức 3',      act:'Mức 3',  pt:2.0,max:2,own:'P.CNTT'},
+ {id:'B.31',n:'GSE IoT/GPS/RTLS',                  tgt:'40 %',       act:'22,0 %', pt:1.1,max:2,own:'P.CNTT, TT SCBD'},
+ {id:'B.32',n:'AI Camera Turnaround',              tgt:'25 %',       act:'12,0 %', pt:1.0,max:2,own:'P.CNTT, các CN'},
+ {id:'B.33',n:'Workforce Optimization (WFO)',      tgt:'1 CN pilot', act:'0',      pt:0.6,max:2,own:'P.CNTT, P.TCNL'},
+ {id:'B.34',n:'Mobile App công vụ tuyến đầu',      tgt:'60 %',       act:'48,0 %', pt:1.6,max:2,own:'P.CNTT, các CN'},
+ {id:'B.35',n:'Zero Trust cho Private 5G/airside', tgt:'70 %',       act:'55,0 %', pt:1.6,max:2,own:'P.CNTT, P.AT-AN-CL'},
+ {id:'B.36',n:'Predictive Maintenance',            tgt:'20 %',       act:'8,0 %',  pt:0.8,max:2,own:'TT SCBD, P.CNTT'},
+ {id:'B.37',n:'SLA e-Turnaround (ACDM)',           tgt:'85 %',       act:'81,0 %', pt:1.9,max:2,own:'Các CN, P.CNTT'},
+ {id:'C.16',n:'Uptime DC/Cloud lõi',               tgt:'99,5 %',     act:'99,2 %', pt:0.9,max:1,own:'P.CNTT (Hạ tầng)'},
+ {id:'C.17',n:'Use case MCX/Private 5G',           tgt:'≥ 1',        act:'0',      pt:0.3,max:1,own:'P.CNTT, các CN'},
+ {id:'C.18',n:'Node Edge Computing',               tgt:'≥ 1',        act:'1',      pt:1.0,max:1,own:'P.CNTT'},
+ {id:'C.19',n:'GSE điện giám sát IoT',             tgt:'40 %',       act:'18,0 %', pt:0.5,max:1,own:'P.CNTT, TT SCBD'},
+ {id:'C.20',n:'MCX/Camera/IoT đạt chuẩn ATTT',     tgt:'70 %',       act:'52,0 %', pt:0.7,max:1,own:'P.CNTT, P.AT-AN-CL'},
+ {id:'C.21',n:'ROI dự án hạ tầng số',              tgt:'60 %',       act:'44,0 %', pt:0.7,max:1,own:'P.KHĐT, P.TCKT'},
+];
+
+/* Action_Log / Cảnh báo trọng điểm */
+const ALERTS=[
+ {code:'A.14',       lv:'CAO',cls:'D',t:'Rủi ro sự cố ATTT nghiêm trọng',                         own:'P.CNTT, P.AT-AN-CL',     act:'Diễn tập ứng cứu quý; audit ATTT độc lập',             due:'31/08',st:'Đang xử lý'},
+ {code:'A.04 / A.17',lv:'CAO',cls:'C',t:'Trưởng thành số và trưởng thành hạ tầng chưa đạt Mức 4', own:'Ban CĐ, P.CNTT',         act:'Đầu tư Cloud, Data Lake, AI; đào tạo quản trị',        due:'31/12',st:'Đang xử lý'},
+ {code:'B.31',       lv:'TB', cls:'D',t:'GSE chưa được trang bị định vị RTLS/GPS đầy đủ',         own:'P.CNTT, TT SCBD, các CN',act:'Đấu thầu, mở rộng phạm vi thiết bị định vị',           due:'30/11',st:'Mới'},
+ {code:'B.32 / B.33',lv:'TB', cls:'D',t:'AI Camera và Workforce Optimization triển khai chậm',    own:'P.CNTT, các CN',         act:'Chọn CN Pilot (TSN, NBA); tích hợp DCS/HRM',           due:'31/10',st:'Mới'},
+ {code:'B.36',       lv:'TB', cls:'D',t:'Predictive Maintenance chưa phủ TTB trọng yếu',          own:'TT SCBD, P.CNTT',        act:'IoT sensor + AI Analytics; mở rộng theo lộ trình',     due:'30/09',st:'Mới'},
+ {code:'C.17',       lv:'TB', cls:'D',t:'Số use case MCX/Private 5G còn thấp',                    own:'P.CNTT, các CN',         act:'Đề xuất PoC MCX; ưu tiên use case điều hành khai thác',due:'31/10',st:'Mới'},
+ {code:'A.15',       lv:'CAO',cls:'D',t:'Ngân sách KHCN-ĐMST-CĐS chưa đạt tỷ lệ mục tiêu',        own:'P.TCKT, P.KHĐT',         act:'Bổ sung ngân sách; ưu tiên dự án ROI cao',             due:'15/09',st:'Chờ duyệt'},
+];
+
+/* Xu hướng 2026–2030 — Score_Result theo năm */
+const TREND={
+ years:[2026,2027,2028,2029,2030],
+ actual:[68.4,78.8,null,null,null],
+ forecast:[null,78.8,83.1,87.4,91.0],
+ target:[70,78,85,90,95],
+ milestones:[{y:2027,t:'Nền tảng dữ liệu tập trung'},{y:2028,t:'Đạt Mức 4 trưởng thành số'},{y:2030,t:'Smart Operations toàn mạng'}],
+};
+
+/* Cổng đơn vị — đơn vị đang đăng nhập */
+const ME={code:'P.KHĐT',name:'Chi bộ Phòng KHĐT',role:'Đầu mối nhập liệu',user:'Nguyễn Thị Hà',rank:5,total:84.3,cls:'B'};
+const MY_KPI=[
+ {id:'A.12',n:'Sáng kiến / đề tài ĐMST được công nhận',   tgt:'≥ 12',   act:'9',      pt:0.7,max:1,st:'submitted',ev:2,due:'15/07'},
+ {id:'A.15',n:'Ngân sách KHCN-ĐMST-CĐS / tổng chi phí',   tgt:'≥ 2,0%', act:'1,15%',  pt:1.0,max:2,st:'submitted',ev:3,due:'15/07'},
+ {id:'B.14',n:'Kế hoạch đầu tư CĐS được phê duyệt đúng hạn',tgt:'100%',  act:'100%',   pt:2.0,max:2,st:'approved', ev:2,due:'15/07'},
+ {id:'B.15',n:'Dự án CĐS hoàn thành đúng tiến độ',        tgt:'≥ 85%',  act:'72,0%',  pt:1.3,max:2,st:'draft',    ev:1,due:'15/07'},
+ {id:'B.16',n:'Tỷ lệ giải ngân vốn CĐS trong kỳ',         tgt:'≥ 90%',  act:'',       pt:0,  max:2,st:'empty',    ev:0,due:'15/07'},
+ {id:'C.07',n:'Báo cáo phân tích hiệu quả đầu tư CĐS',    tgt:'4 báo cáo',act:'3',    pt:0.7,max:1,st:'returned', ev:1,due:'15/07',note:'Thiếu file phụ lục quý I'},
+ {id:'C.08',n:'Hồ sơ dự án lưu trữ trên kho số',          tgt:'100%',   act:'95,0%',  pt:0.9,max:1,st:'submitted',ev:2,due:'15/07'},
+ {id:'C.09',n:'Đề xuất cải tiến quy trình có ứng dụng số',tgt:'≥ 6',    act:'4',      pt:0.6,max:1,st:'draft',    ev:0,due:'15/07'},
+];
+const SUBMIT_ST={
+ empty:    {n:'Chưa nhập',   c:'var(--st-gray)'},
+ draft:    {n:'Nháp',        c:'var(--st-orange)'},
+ submitted:{n:'Chờ duyệt',   c:'var(--st-b)'},
+ review:   {n:'Đang thẩm định',c:'var(--st-cyan)'},
+ returned: {n:'Bị trả lại',  c:'var(--st-d)'},
+ approved: {n:'Đã duyệt',    c:'var(--st-a)'},
+};
+const EVIDENCE=[
+ {f:'A12_DanhSachSangKien_Q2-2027.xlsx', kpi:'A.12', ty:'XLSX', v:'v2', by:'Nguyễn Thị Hà',  at:'12/07 09:14', st:'verified', sz:'248 KB'},
+ {f:'A12_QuyetDinh_CongNhan_SangKien.pdf',kpi:'A.12',ty:'PDF',  v:'v1', by:'Nguyễn Thị Hà',  at:'12/07 09:20', st:'verified', sz:'1,2 MB'},
+ {f:'A15_BaoCaoNganSach_6T2027.pdf',     kpi:'A.15', ty:'PDF',  v:'v3', by:'Trần Văn Bình',  at:'13/07 16:02', st:'pending',  sz:'860 KB'},
+ {f:'A15_BangKe_ChiPhi_CDS.xlsx',        kpi:'A.15', ty:'XLSX', v:'v1', by:'Trần Văn Bình',  at:'13/07 16:05', st:'pending',  sz:'412 KB'},
+ {f:'B15_TienDo_DuAn_CDS_Q2.pptx',       kpi:'B.15', ty:'PPTX', v:'v1', by:'Nguyễn Thị Hà',  at:'14/07 08:31', st:'draft',    sz:'3,4 MB'},
+ {f:'C07_BaoCaoHieuQua_Q1.pdf',          kpi:'C.07', ty:'PDF',  v:'v1', by:'Lê Minh Đức',    at:'02/07 10:45', st:'rejected', sz:'770 KB', note:'Thiếu phụ lục số liệu quý I'},
+];
+const EV_ST={verified:{n:'Đã xác minh',c:'var(--st-a)'},pending:{n:'Chờ xác minh',c:'var(--st-b)'},draft:{n:'Bản nháp',c:'var(--st-gray)'},rejected:{n:'Bị từ chối',c:'var(--st-d)'}};
+
+/* Approval_Workflow — 5 bước */
+const STEPS=[
+ {n:'Nhập liệu',    s:'Đầu mối đơn vị · hoàn tất 14/07',    st:'done'},
+ {n:'Tự chấm điểm', s:'Đơn vị xác nhận · 14/07',            st:'done'},
+ {n:'Bí thư duyệt', s:'Đ/c Trần Văn Bình · 15/07 08:30',    st:'done'},
+ {n:'Thẩm định',    s:'Tổ thẩm định Ban CĐ · đang xử lý',   st:'current'},
+ {n:'Chốt kỳ',      s:'VP Đảng ủy · dự kiến 20/07',         st:'todo'},
+];
+/* Lịch sử KPI của đơn vị */
+const HISTORY=[
+ {p:'Quý II/2027', t:84.3,cls:'B',d:+1.5,ev:12,note:'Đang thẩm định'},
+ {p:'Quý I/2027',  t:82.8,cls:'B',d:+2.1,ev:11,note:'Đã chốt'},
+ {p:'Năm 2026',    t:80.7,cls:'B',d:+4.6,ev:38,note:'Đã chốt · xếp hạng 6/13'},
+ {p:'6T cuối 2026',t:79.4,cls:'B',d:+3.0,ev:19,note:'Đã chốt'},
+ {p:'6T đầu 2026', t:76.4,cls:'B',d:null,ev:17,note:'Kỳ gốc'},
+];
+/* Data Dictionary — mục 8 của đặc tả */
+const DICT=[
+ {t:'KPI_Master',        k:'KPI_ID',                                f:'KPI_Name · Layer · Task_Group_ID · Unit · Formula · Source_System · Owner_Default · Max_Point · Weight_Class · Cycle · KPI_Type · Active_Flag', r:'Dimension lõi của 75 KPI'},
+ {t:'KPI_Target',        k:'Target_ID · KPI_ID · Period_ID · Org_ID',f:'Target_2026 · Target_2028 · Target_2030 · Target_Value · Threshold_Green · Threshold_Yellow · Direction · Effective_Date', r:'Mục tiêu theo kỳ / đơn vị'},
+ {t:'KPI_Submission',    k:'Submission_ID · KPI_ID · Org_ID · Period_ID',f:'Actual_Value · Actual_Text · Self_Comment · Submitted_By · Submitted_Date · Submit_Status · Calc_Version', r:'Fact nhập liệu actual'},
+ {t:'Evidence_File',     k:'Evidence_ID · Submission_ID',           f:'File_Name · File_URL · File_Type · Version_No · Uploaded_By · Uploaded_Date · Verified_Status · Hash/Checksum', r:'Minh chứng và version'},
+ {t:'Approval_Workflow', k:'Workflow_ID · Submission_ID',           f:'Current_Status · Step_No · Approver · Decision · Comment · Decision_Date · Returned_Reason', r:'Trạng thái phê duyệt'},
+ {t:'Score_Result',      k:'Score_ID · KPI_ID · Org_ID · Period_ID',f:'Achievement_Rate · Raw_Point · Weighted_Point · RYG_Status · Rank_No · Classification · Score_Date', r:'Fact tính điểm và xếp loại'},
+ {t:'Org_Unit',          k:'Org_ID',                                f:'Org_Name · Org_Type · Parent_Org_ID · Branch · Active_Flag', r:'Dimension đơn vị và RLS'},
+ {t:'Assessment_Period', k:'Period_ID',                             f:'Year · Quarter · Month · Period_Type · Start_Date · End_Date · Due_Date · Lock_Date', r:'Dimension kỳ đánh giá'},
+ {t:'Task_Group',        k:'Task_Group_ID',                         f:'Task_Group_Name · Description · Strategic_Priority', r:'8 nhóm nhiệm vụ'},
+ {t:'User_Access_Map',   k:'User_Email/UPN · Org_ID · Role_Code',   f:'Can_View_All · Can_Approve · Can_Edit · Effective_From · Effective_To', r:'Dynamic RLS và phân quyền'},
+ {t:'Action_Log',        k:'Action_ID · KPI_ID · Org_ID · Period_ID',f:'Issue · Root_Cause · Action · Owner · Due_Date · Resolution_Status · Closed_Date', r:'Quản lý KPI đỏ / vàng'},
+];
+/* Nguồn dữ liệu & tích hợp — mục 6, 10 */
+const SOURCES=[
+ {n:'Excel template',      ph:'MVP',      wf:'Thủ công',                sc:'Thấp – trung bình', au:'Yếu nếu chỉ lưu file',        cl:'C'},
+ {n:'SharePoint Lists/Docs',ph:'Phase 2', wf:'Native + Power Automate', sc:'Trung bình',        au:'Version · Modified by · Flow',cl:'B'},
+ {n:'Database tập trung',  ph:'Phase 3',  wf:'Qua ứng dụng / API',      sc:'Cao',               au:'Audit table · log · lineage', cl:'A'},
+];
+const INTEGRATIONS=[
+ {sys:'eOffice / DOC',    kpi:'A.06 · A.07 · B.08',                  how:'API/ETL tỷ lệ văn bản, giao dịch, quyết định có AI hỗ trợ', ph:'Phase 3'},
+ {sys:'HRM',              kpi:'A.08 · A.09 · B.09 · B.10',           how:'Đồng bộ nhân sự, kỹ năng số, chữ ký số',                    ph:'Phase 2–3'},
+ {sys:'LMS',              kpi:'B.03 · B.10 · B.11 · B.20 · B.27',    how:'Kết quả đào tạo, giờ học, hoàn thành khóa học',             ph:'Phase 2–3'},
+ {sys:'SOC/SIEM · IAM/PAM',kpi:'A.14 · B.12 · B.13 · B.28 · C.12 · C.20',how:'Sự cố ATTT, tuân thủ MFA/phishing, phủ hệ thống trọng yếu',ph:'Phase 3'},
+ {sys:'Data Lake',        kpi:'A.07 · A.13 · dashboard realtime',    how:'Tập trung dữ liệu vận hành, analytics và AI',               ph:'Phase 3'},
+ {sys:'EAM / CMMS',       kpi:'A.11 · B.26 · B.31 · C.19',           how:'Hồ sơ thiết bị, IoT/GPS/RTLS, năng lượng, bảo trì',         ph:'Phase 3'},
+ {sys:'DCS / ACDM / VMS', kpi:'A.05 · B.22 · B.23 · B.25',           how:'Hồ sơ chuyến bay, e-Loadsheet, OTP/TAT, quy trình số',      ph:'Phase 3'},
+ {sys:'SharePoint',       kpi:'Minh chứng · workflow · danh mục KPI',how:'Lists cho dữ liệu, Library cho file, version và phê duyệt', ph:'Phase 2'},
+];
+/* Audit log mẫu */
+const AUDIT=[
+ {t:'15/07 08:30', u:'VP Đảng ủy',    a:'Chốt kỳ',        o:'Quý II/2027 · khoá 12/13 đơn vị', c:'var(--st-a)'},
+ {t:'15/07 08:12', u:'Tổ thẩm định',  a:'Trả lại',        o:'C.07 · P.KHĐT — thiếu phụ lục quý I', c:'var(--st-d)'},
+ {t:'14/07 17:44', u:'Trần Văn Bình', a:'Phê duyệt',      o:'Phiếu Quý II/2027 · P.KHĐT', c:'var(--st-b)'},
+ {t:'14/07 08:31', u:'Nguyễn Thị Hà', a:'Tải minh chứng', o:'B15_TienDo_DuAn_CDS_Q2.pptx · v1', c:'var(--st-cyan)'},
+ {t:'13/07 16:05', u:'Trần Văn Bình', a:'Sửa submission', o:'A.15 · actual 1,20% → 1,15%', c:'var(--st-orange)'},
+ {t:'13/07 03:00', u:'Hệ thống',      a:'Refresh dataset',o:'NQ57-PROD · 00:04:12 · thành công', c:'var(--st-gray)'},
+];
+/* ══════════════════════════════════════════════════════════════════════════
+   3 · COMPONENTS — mỗi hàm = 1 component sẽ dựng lại trong Figma
+       Tên component ghi ở data-fig để tra ngược khi hand-off.
+   ══════════════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const fx = (n,d=1) => (n===null||n===undefined||n==='')?'—':Number(n).toFixed(d).replace('.',',');
+const pctOf = k => Math.round(k.pt/k.max*100);
+const CV = {a:'var(--st-a)',b:'var(--st-b)',c:'var(--st-c)',d:'var(--st-d)',gray:'var(--st-gray)',cyan:'var(--st-cyan)',orange:'var(--st-orange)'};
+
+const C = {
+  /* Data/Pill */
+  pill:(txt,mod='')=>`<span class="pill ${mod}" data-fig="Data/Pill">${txt}</span>`,
+  dotPill:(txt,color)=>`<span class="pill" data-fig="Data/Pill"><i class="dot-sm" style="background:${color}"></i>${txt}</span>`,
+
+  /* Data/ProgressTrack — vạch mốc 75% giữ nguyên như StatusWithPercent của Circle */
+  track:(pct,color,{mark=true,val=true,w=112}={})=>
+    `<div class="col c-trk" style="width:${w}px" data-fig="Data/ProgressTrack">
+       <span class="trk ${mark?'':'no-mark'}"><i style="width:${Math.min(pct,100)}%;background:${color}"></i></span>
+       ${val?`<span class="trk-v mono">${Math.round(pct)}%</span>`:''}
+     </div>`,
+
+  /* Data/StatusTag */
+  statusTag:cls=>`<span class="status" data-fig="Data/StatusTag"><i class="dot-sm" style="background:${CLS[cls].c}"></i>${CLS[cls].n}</span>`,
+  submitTag:st=>`<span class="status" data-fig="Data/StatusTag"><i class="dot-sm" style="background:${SUBMIT_ST[st].c}"></i>${SUBMIT_ST[st].n}</span>`,
+
+  /* Data/Delta */
+  delta:v=>v===null?`<span class="flat mono">—</span>`
+    :`<span class="mono ${v>0?'up':v<0?'down':'flat'}" data-fig="Data/Delta">${v>0?'▲':v<0?'▼':'—'} ${fx(Math.abs(v))}</span>`,
+
+  /* List/GroupHeader */
+  groupHead:(cls,count,rule)=>
+    `<div class="grp-head tint-${cls.toLowerCase()}" data-fig="List/GroupHeader">
+       <div class="l">${SICON[cls]}<span class="nm">${cls} · ${CLS[cls].full}</span><span class="ct mono">${count}</span></div>
+       <span class="rule mono">${rule??CLS[cls].rule}</span>
+     </div>`,
+
+  /* List/GroupHeader · biến thể tự do — dùng khi gom theo tiêu chí khác xếp loại */
+  groupHeadRaw:(tint,icon,name,count,rule)=>
+    `<div class="grp-head tint-${tint}" data-fig="List/GroupHeader">
+       <div class="l">${icon}<span class="nm">${name}</span><span class="ct mono">${count}</span></div>
+       <span class="rule mono">${rule}</span>
+     </div>`,
+
+  /* List/SectionHeader */
+  listHead:(title,count,right='')=>
+    `<div class="list-head" data-fig="List/SectionHeader">
+       <div class="t">${title}${count!==undefined?` <span class="n mono">${count}</span>`:''}</div>
+       <div class="r">${right}</div>
+     </div>`,
+
+  /* Data/StatCell */
+  stat:({icon,label,value,unit,delta,seg,legend,sub,big})=>
+    `<div class="stat" data-fig="Data/StatCell">
+       <div class="lbl">${ICON[icon]}${label}</div>
+       <div class="val"${big?'':' style="font-size:26px"'}>${value}${unit?`<small>${unit}</small>`:''}${delta?`<span class="delta ${delta.k} mono">${delta.t}</span>`:''}</div>
+       ${seg?`<div class="segbar" data-fig="Data/SegBar">${seg.map(s=>`<i style="width:${s.w}%;background:${s.c}"></i>`).join('')}</div>`:''}
+       ${legend?`<div class="legend" data-fig="Data/Legend">${legend.map(l=>`<span>${l.c?`<i class="dot-sm" style="background:${l.c}"></i>`:''}${l.t}${l.v?` <b class="mono">${l.v}</b>`:''}</span>`).join('')}</div>`:''}
+       ${sub?`<div class="sub">${sub}</div>`:''}
+     </div>`,
+
+  /* List/UnitRow — bản dịch của ProjectLine */
+  unitRow:(u,{rank=true}={})=>{
+    const cls=clsOf(u.t);
+    return `<div class="row" data-fig="List/UnitRow">
+      <div class="row-main">
+        ${rank?`<span class="rank mono">${String(u.r).padStart(2,'0')}</span>`:''}
+        <span class="unit">${u.name}</span>
+        ${C.dotPill(u.code,CV[u.dot]||CV.gray)}
+        ${u.flag?C.pill(u.flag,'danger'):''}
+      </div>
+      ${C.track(u.t,CLS[cls].c)}
+      <div class="col c-lay mono">${fx(u.a)}</div>
+      <div class="col c-lay mono">${fx(u.b)}</div>
+      <div class="col c-lay mono">${fx(u.c)}</div>
+      <div class="col c-tot mono"${cls==='D'?' style="color:var(--st-d-ink)"':''}>${fx(u.t)}</div>
+      <div class="col c-cls">${C.statusTag(cls)}</div>
+      <div class="col c-dt">${C.delta(u.d)}</div>
+    </div>`;
+  },
+
+  /* List/KpiRow */
+  kpiRow:k=>{
+    const p=pctOf(k), cls=clsOf(p);
+    return `<div class="row" data-fig="List/KpiRow">
+      <div class="row-main">
+        <span class="rank mono" style="width:38px;border-radius:6px">${k.id}</span>
+        <span class="unit" style="font-weight:400" title="${k.n}">${k.n}</span>
+        ${k.src?C.pill(k.src,'opt'):''}
+      </div>
+      <div class="col c-lay mono" style="width:70px">${k.tgt}</div>
+      <div class="col c-lay mono" style="width:64px;color:var(--fg)">${k.act||'—'}</div>
+      ${C.track(p,CLS[cls].c,{w:104})}
+      <div class="col c-tot mono" style="width:52px">${fx(k.pt)}<span style="color:var(--muted-fg);font-weight:400">/${k.max}</span></div>
+      <div class="col c-cls" style="width:88px">${C.statusTag(cls)}</div>
+      <div class="col c-lay" style="width:84px;text-align:left;padding-left:8px">${k.own||''}</div>
+    </div>`;
+  },
+
+  /* Panel/Header */
+  panelHead:(t,right='')=>`<div class="pn-head" data-fig="Panel/Header"><span class="t">${t}</span>${right||`<button class="icon-btn" title="Đóng">${ICON.x}</button>`}</div>`,
+
+  /* Panel/GroupBar — CountList của Circle, thêm thanh bar và mốc 75% */
+  groupBar:g=>{
+    /* g.col = màu cố định (dùng khi bar biểu diễn phân bố, không phải mức đạt) */
+    const col=g.col||CLS[clsOf(g.pct)].c;
+    return `<button class="gp" data-fig="Panel/GroupBar">
+      <div class="gp-top"><span class="gp-id mono">${g.i}</span><span class="gp-nm" title="${g.name}">${g.short||g.name}</span>
+        <span class="gp-v mono">${fx(g.pct)}%</span></div>
+      <div class="gp-bot"><span class="gp-trk"><i style="width:${g.pct}%;background:${col}"></i></span>
+        <span class="gp-ct mono">${g.done}/${g.tot}</span></div>
+    </button>`;
+  },
+
+  /* Panel/AlertItem */
+  alertItem:a=>`<button class="al" data-fig="Panel/AlertItem">
+      <span class="al-ic"><i class="dot-sm" style="background:${CLS[a.cls].c};width:7px;height:7px"></i></span>
+      <span class="al-b">
+        <span class="al-t"><span class="al-code mono">${a.code}</span><span class="al-lv ${a.lv==='CAO'?'hi':''}">${a.lv}</span></span>
+        <span class="al-d">${a.t}</span>
+        <span class="al-o">${a.own} · hạn ${a.due}</span>
+      </span>
+    </button>`,
+
+  /* Panel/KeyValue */
+  kv:(k,v)=>`<div class="kv" data-fig="Panel/KeyValue"><span class="k">${k}</span><span class="v">${v}</span></div>`,
+
+  /* Form/Field */
+  field:({label,val='',ph='',type='input',unit,help,helpK='',req,locked,rows})=>
+    `<div class="field" data-fig="Form/Field">
+       <label>${label}${req?' <span class="req">*</span>':''}</label>
+       <div class="${unit?'inline-unit':''}">
+         ${type==='textarea'
+           ? `<textarea class="textarea" ${rows?`rows="${rows}"`:''} placeholder="${ph}">${val}</textarea>`
+           : `<input class="input ${locked?'locked':''}" value="${val}" placeholder="${ph}" ${locked?'disabled':''}>`}
+         ${unit?`<span class="u">${unit}</span>`:''}
+       </div>
+       ${help?`<div class="help ${helpK}">${help}</div>`:''}
+     </div>`,
+
+  /* Feedback/Callout */
+  callout:(kind,icon,html,extra='')=>`<div class="callout ${kind} ${extra}" data-fig="Feedback/Callout"><span class="ci" style="width:16px;height:16px;color:${kind==='err'?'var(--st-d-ink)':kind==='warn'?'var(--st-c-ink)':'var(--st-b)'}">${ICON[icon]}</span><div>${html}</div></div>`,
+
+  /* Nav/Stepper */
+  stepper:steps=>`<div class="stepper" data-fig="Nav/Stepper">${steps.map((s,i)=>
+    `<div class="step ${s.st}"><div class="sd">${s.st==='done'?'✓':i+1}</div><div class="sl"></div>
+       <div class="sn">${s.n}</div><div class="ss">${s.s}</div></div>`).join('')}</div>`,
+};
+
+/* Chart/Line — SVG thuần, import thẳng vào Figma thành vector */
+function lineChart(){
+  const W=1000,H=250,PL=42,PR=16,PT=14,PB=26, y0=55,y1=100;
+  const X=i=>PL+i*(W-PL-PR)/(TREND.years.length-1);
+  const Y=v=>PT+(1-(v-y0)/(y1-y0))*(H-PT-PB);
+  const path=arr=>arr.map((v,i)=>v===null?null:`${i&&arr[i-1]!==null?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).filter(Boolean).join(' ');
+  const grid=[60,70,80,90,100].map(v=>
+    `<line x1="${PL}" x2="${W-PR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--border)" stroke-dasharray="3 3"/>
+     <text x="${PL-8}" y="${Y(v)+3.5}" text-anchor="end" font-size="10" fill="var(--muted-fg)">${v}</text>`).join('');
+  const xlab=TREND.years.map((y,i)=>`<text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="var(--muted-fg)">${y}</text>`).join('');
+  const area=`M${X(0)} ${Y(TREND.actual[0])} L${X(1)} ${Y(TREND.actual[1])} L${X(1)} ${H-PB} L${X(0)} ${H-PB} Z`;
+  const dots=TREND.actual.map((v,i)=>v===null?'':`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="var(--st-b)" stroke="var(--container)" stroke-width="2"/>`).join('')
+    + TREND.forecast.map((v,i)=>(v===null||i<2)?'':`<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="var(--container)" stroke="var(--st-b)" stroke-width="1.6"/>`).join('');
+  const ms=TREND.milestones.map(m=>{const i=TREND.years.indexOf(m.y);
+    return `<line x1="${X(i)}" x2="${X(i)}" y1="${PT}" y2="${H-PB}" stroke="var(--st-orange)" stroke-opacity=".45" stroke-dasharray="2 3"/>`}).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" data-fig="Chart/LineTrend" style="overflow:visible">
+    ${grid}${ms}
+    <path d="${area}" fill="var(--st-b)" fill-opacity=".10"/>
+    <path d="${path(TREND.target)}" stroke="var(--st-gray)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+    <path d="${path(TREND.forecast)}" stroke="var(--st-b)" stroke-width="1.8" stroke-dasharray="4 4" fill="none" stroke-opacity=".65"/>
+    <path d="${path(TREND.actual)}" stroke="var(--st-b)" stroke-width="2.2" fill="none"/>
+    ${dots}${xlab}
+  </svg>`;
+}
+
+/* Chart/GroupResults — yêu cầu 3 của đầu bài: 1 biểu đồ cho 8 nhóm nhiệm vụ.
+   Dạng thanh ngang: 8 hạng mục, nhãn tiếng Việt dài, so sánh độ lớn + 1 mốc mục tiêu.
+   Giá trị và nhãn dùng mực chữ, KHÔNG tô màu theo chuỗi — màu chỉ nằm ở thanh bar. */
+function groupChart(){
+  const rows=GROUPS.map(g=>{
+    const col=CLS[clsOf(g.pct)].c;
+    return `<span class="gc-lbl"><span class="gc-num mono">${g.i}</span><span class="gc-nm" title="${g.name}">${g.short||g.name}</span></span>
+      <span class="gc-bar" title="${g.name} — đạt ${fx(g.pct)}% · ${g.done}/${g.tot} KPI"><i style="width:${g.pct}%;background:${col}"></i></span>
+      <span class="gc-end"><b class="mono">${fx(g.pct)}%</b><span class="gc-ct mono">${g.done}/${g.tot}</span></span>`;
+  }).join('');
+  return `<div class="gchart" data-fig="Chart/GroupResults">
+    <div class="gc-lines"><i style="left:25%"></i><i style="left:50%"></i><i class="t" style="left:75%"></i><i style="left:100%"></i></div>
+    ${rows}
+    <span></span>
+    <div class="gc-axis">${[0,25,50,75,100].map(v=>`<span style="left:${v}%">${v}${v===100?'%':''}</span>`).join('')}</div>
+    <span></span>
+  </div>
+  <div class="chart-legend" style="padding:2px var(--pad-x) 16px">
+    ${['A','B','C','D'].map(c=>`<span><i class="dot-sm" style="background:${CLS[c].c}"></i>${CLS[c].n} · ${CLS[c].rule.replace(' · chưa đạt ngưỡng','').replace(' · cần xử lý','')}</span>`).join('')}
+    <span><i class="lg-line" style="background:var(--muted-fg);opacity:.5"></i>Mục tiêu 75%</span>
+  </div>`;
+}
+
+/* Heatmap 8 nhóm × 13 đơn vị */
+function heatmap(){
+  const head=`<tr><th class="rowh"></th>${UNITS.map(u=>`<th class="colh">${u.code}</th>`).join('')}<th class="rowh" style="padding-left:8px">TB</th></tr>`;
+  const rows=GROUPS.map((g,gi)=>{
+    let sum=0;
+    const cells=UNITS.map((u,ui)=>{
+      const v=Math.max(32,Math.min(100,Math.round(g.pct*(u.t/78.8)+(((gi*7+ui*13)%9)-4))));
+      sum+=v; const cls=clsOf(v);
+      return `<td style="background:${CLS[cls].c}" title="${g.name} · ${u.code}: ${v}%">${v}</td>`;
+    }).join('');
+    return `<tr><th class="rowh" title="${g.name}">${g.i}. ${g.short||g.name}</th>${cells}<th class="rowh mono" style="padding-left:8px">${Math.round(sum/UNITS.length)}</th></tr>`;
+  }).join('');
+  return `<div class="heat-wrap"><table class="heat" data-fig="Chart/Heatmap">${head}${rows}</table>
+    <div class="chart-legend" style="padding:14px 0 0">
+      ${['A','B','C','D'].map(c=>`<span><i class="dot-sm" style="background:${CLS[c].c}"></i>${CLS[c].n} · ${CLS[c].rule}</span>`).join('')}
+    </div></div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4 · SCREENS · BOD  (7 màn hình theo mục 3 của đặc tả)
+   ══════════════════════════════════════════════════════════════════════════ */
+const SCREENS = {};
+const byClass = () => ['A','B','C','D'].map(c=>({c,list:UNITS.filter(u=>clsOf(u.t)===c)}));
+const sumPt = a => a.reduce((s,k)=>s+k.pt,0), sumMax = a => a.reduce((s,k)=>s+k.max,0);
+
+/* ───────── BOD-01 · Executive Dashboard ───────── */
+SCREENS['bod-01']={
+  group:'bod', nav:{label:'Tổng quan',icon:'grid'}, code:'BOD-01', title:'Tổng quan điều hành',
+  stamp:'<span class="dot-sm" style="background:var(--st-a)"></span> Đã chốt <span class="mono">15/07 08:30</span> · làm mới <span class="mono">03:00</span>',
+  chips:[['Kỳ','Quý II/2027'],['Lớp','Tất cả'],['Nhóm','Tất cả'],['Gom theo','Xếp loại']],
+  main(){
+    /* AVERAGE(F5:F18) của Sheet 7 tính trên 14 dòng = Đảng bộ cấp Công ty + 13 cơ sở */
+    const all=[...UNITS,COMPANY];
+    const avg=all.reduce((s,u)=>s+u.t,0)/all.length;
+    const hi=Math.max(...all.map(u=>u.t)), lo=Math.min(...all.map(u=>u.t));
+    const cnt=c=>UNITS.filter(u=>clsOf(u.t)===c).length;
+    const cnt14=c=>all.filter(u=>clsOf(u.t)===c).length;
+    const pass=UNITS.filter(u=>u.t>=75).length;
+    const doneK=GROUPS.reduce((s,g)=>s+g.done,0), totK=GROUPS.reduce((s,g)=>s+g.tot,0);
+    const avgA=UNITS.reduce((s,u)=>s+u.a,0)/13, avgB=UNITS.reduce((s,u)=>s+u.b,0)/13, avgC=UNITS.reduce((s,u)=>s+u.c,0)/13;
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'trend',label:'Điểm bình quân Đảng bộ',value:`<span class="mono">${fx(avg)}</span>`,unit:'/100',
+        delta:{k:'up',t:'▲ 4,2'},
+        seg:[{w:avgA,c:CV.b},{w:avgB,c:CV.cyan},{w:avgC,c:CV.orange}],
+        legend:[{c:CV.b,t:'Lớp A',v:fx(avgA)},{c:CV.cyan,t:'Lớp B',v:fx(avgB)},{c:CV.orange,t:'Lớp C',v:fx(avgC)}],
+        sub:`Cao nhất <b style="color:var(--fg)" class="mono">${fx(hi)}</b> · thấp nhất <b style="color:var(--fg)" class="mono">${fx(lo)}</b> · <span class="mono">AVERAGE</span> trên 14 đơn vị`})}
+      ${C.stat({icon:'check',label:'Tỷ lệ hoàn thành KPI',value:`<span class="mono">${fx(doneK/totK*100)}</span>`,unit:'%',
+        delta:{k:'up',t:'▲ 5,3'}, seg:[{w:doneK/totK*100,c:CV.b}],
+        legend:[{t:'Đạt mục tiêu',v:`${doneK}/${totK}`},{t:'Đủ minh chứng',v:'61/75'}],
+        sub:'8 KPI quá hạn hoặc chưa nhập'})}
+      ${C.stat({icon:'bars',label:'Cơ cấu xếp loại đơn vị',
+        /* nhãn A/B/C/D đi kèm ngay cạnh số — không định danh bằng màu đơn thuần */
+        value:['A','B','C','D'].map(c=>`<span style="font-size:19px;display:inline-flex;align-items:baseline;gap:4px"><i class="dot-sm" style="background:${CLS[c].c}"></i><span style="font-size:12px;font-weight:500;color:var(--muted-fg)">${c}</span><span class="mono">${cnt(c)}</span></span>`).join('<span style="width:6px"></span>'),
+        seg:['A','B','C','D'].map(c=>({w:cnt(c)/13*100,c:CLS[c].c})),
+        sub:`13 đơn vị cơ sở · <span class="mono">COUNTIF</span> gộp cấp Công ty thì loại B là <b style="color:var(--fg)" class="mono">${cnt14('B')}</b>`})}
+      ${C.stat({icon:'layers',label:'Quy mô bộ chỉ số',value:`<span class="mono">${totK}</span>`,unit:'KPI',
+        seg:[{w:17/75*100,c:CV.b},{w:37/75*100,c:CV.cyan},{w:21/75*100,c:CV.orange}],
+        legend:[{c:CV.b,t:'Lớp A',v:17},{c:CV.cyan,t:'Lớp B',v:37},{c:CV.orange,t:'Lớp C',v:21}],
+        sub:`14 đơn vị đánh giá · 8 nhóm nhiệm vụ · điểm thô tối đa <span class="mono">128</span>`})}
+    </section>
+
+    ${C.listHead('Kết quả theo 8 nhóm nhiệm vụ',8,
+      `<span>Đạt <span class="mono">53/75</span> KPI</span><span style="opacity:.4">·</span><span>vạch đứt = mục tiêu <span class="mono">75%</span></span>`)}
+    ${groupChart()}
+
+    ${C.listHead('Xếp hạng đơn vị cơ sở',13,'<span>Ngưỡng đạt <span class="mono">≥ 75</span> điểm</span><span style="opacity:.4">·</span><span>Nguồn Sheet 7 · C5:G18</span>')}
+    ${byClass().map(g=>{
+      if(!g.list.length) return '';
+      /* Vạch phân định đạt / chưa đạt chèn ngay trước nhóm C — nhóm đầu tiên dưới ngưỡng 75 */
+      const rule = g.c==='C'
+        ? `<div class="thr" data-fig="List/ThresholdRule"><span class="thr-l"></span>
+             <span class="thr-t">Ngưỡng điều hành <b class="mono">75</b> điểm — phía trên <b>${pass}</b> đơn vị đạt · phía dưới <b>${13-pass}</b> đơn vị chưa đạt</span>
+             <span class="thr-l"></span></div>` : '';
+      return rule + C.groupHead(g.c,g.list.length) + g.list.map(u=>C.unitRow(u)).join('');
+    }).join('')}
+
+    <div class="foot-note">
+      <span><b>Số liệu minh họa</b> — file Excel hiện là mẫu trống</span>
+      <span>Công thức <span class="mono">30×(ΣA/33) + 45×(ΣB/63) + 25×(ΣC/32)</span></span>
+      <span>Đảng bộ cấp Công ty tách riêng, không xếp hạng</span>
+    </div>`;
+  },
+  panel(){
+    const n=s=>UNITS.filter(u=>u.st===s).length;
+    return C.panelHead('Cảnh báo trọng điểm')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Cần quyết định của BOD</span><span class="mono">${ALERTS.length}</span></div>
+      ${ALERTS.map(C.alertItem).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Tình trạng nộp phiếu</span><span class="mono">13</span></div>
+      ${Object.keys(SUBMIT_ST).filter(k=>n(k)).map(k=>
+        C.kv(`<i class="dot-sm" style="background:${SUBMIT_ST[k].c};margin-right:6px"></i>${SUBMIT_ST[k].n}`,
+             `<span class="mono">${n(k)}</span>`)).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nguồn và cập nhật</span></div>
+      ${C.kv('Kỳ đánh giá','Quý II/2027')}
+      ${C.kv('Nguồn dữ liệu','SharePoint + Excel')}
+      ${C.kv('Làm mới gần nhất','<span class="mono">15/07 03:00</span>')}
+      ${C.kv('Chốt kỳ','<span class="mono">15/07 08:30</span>')}
+    </div>`;
+  }
+};
+
+/* ───────── BOD-02 · Ranking Dashboard ───────── */
+SCREENS['bod-02']={
+  group:'bod', nav:{label:'Xếp hạng đơn vị',icon:'rank',count:13}, code:'BOD-02', title:'Xếp hạng đơn vị',
+  chips:[['Kỳ','Quý II/2027'],['Sắp xếp','Tổng điểm ↓'],['Hiển thị','Tất cả đơn vị']],
+  main(){
+    const top=UNITS[0], bot=UNITS[UNITS.length-1];
+    const up=UNITS.filter(u=>u.d>0).length;
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'target',label:'Dẫn đầu kỳ này',value:'<span class="mono">92,4</span>',unit:top.code,
+        legend:[{c:CV.a,t:top.name}],sub:'Giữ vị trí số 1 hai kỳ liên tiếp'})}
+      ${C.stat({icon:'alert',label:'Thấp nhất kỳ này',value:'<span class="mono">59,5</span>',unit:bot.code,
+        legend:[{c:CV.d,t:bot.name}],sub:'Giảm 4,7 điểm · thiếu 6 minh chứng'})}
+      ${C.stat({icon:'bars',label:'Khoảng cách cao – thấp',value:'<span class="mono">32,9</span>',unit:'điểm',
+        delta:{k:'down',t:'▼ 1,8'},sub:'Độ phân tán thu hẹp so với Quý I'})}
+      ${C.stat({icon:'trend',label:'Đơn vị cải thiện',value:`<span class="mono">${up}</span>`,unit:'/13 đơn vị',
+        seg:[{w:up/13*100,c:CV.a},{w:(13-up)/13*100,c:CV.d}],
+        legend:[{c:CV.a,t:'Tăng điểm',v:up},{c:CV.d,t:'Giảm điểm',v:13-up}]})}
+    </section>
+
+    ${C.listHead('Bảng xếp hạng chi tiết',13,'<span>Cột A/B/C là điểm đã quy đổi theo trọng số 30/45/25</span>')}
+    <div class="row" style="padding-top:8px;padding-bottom:8px;font-size:11px;color:var(--muted-fg);font-weight:500;background:var(--container)">
+      <div class="row-main" style="padding-left:32px">Đơn vị</div>
+      <div class="col c-trk" style="justify-content:flex-start">Mức đạt</div>
+      <div class="col c-lay">Lớp A</div><div class="col c-lay">Lớp B</div><div class="col c-lay">Lớp C</div>
+      <div class="col c-tot">Tổng</div><div class="col c-cls">Xếp loại</div><div class="col c-dt">Δ kỳ</div>
+    </div>
+    ${UNITS.map(u=>C.unitRow(u)).join('')}
+    ${C.groupHead('B',1,'Không tham gia xếp hạng')}
+    ${C.unitRow({...COMPANY,r:'—',dot:'gray'},{rank:false})}
+    <div class="foot-note"><span>Δ kỳ so với <b>Quý I/2027</b></span><span>Xếp loại theo ngưỡng <span class="mono">90 / 75 / 60</span></span></div>`;
+  },
+  panel(){
+    const cnt=c=>UNITS.filter(u=>clsOf(u.t)===c).length;
+    const movers=[...UNITS].sort((a,b)=>b.d-a.d);
+    return C.panelHead('Phân tích xếp hạng')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Phân bố xếp loại</span><span class="mono">13</span></div>
+      ${['A','B','C','D'].map(c=>C.groupBar({i:c,name:CLS[c].full,pct:cnt(c)/13*100,done:cnt(c),tot:13,col:CLS[c].c})).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Tăng mạnh nhất</span></div>
+      ${movers.slice(0,3).map(u=>`<div class="kv"><span class="k">${u.code}</span><span class="v up mono">▲ ${fx(u.d)}</span></div>`).join('')}
+      <div class="pn-lbl" style="margin-top:12px"><span>Giảm mạnh nhất</span></div>
+      ${movers.slice(-3).reverse().map(u=>`<div class="kv"><span class="k">${u.code}</span><span class="v down mono">▼ ${fx(Math.abs(u.d))}</span></div>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Tình trạng nộp phiếu</span></div>
+      ${Object.keys(SUBMIT_ST).filter(k=>UNITS.some(u=>u.st===k)).map(k=>
+        C.kv(`<i class="dot-sm" style="background:${SUBMIT_ST[k].c};margin-right:6px"></i>${SUBMIT_ST[k].n}`,
+             `<span class="mono">${UNITS.filter(u=>u.st===k).length}</span>`)).join('')}
+    </div>`;
+  }
+};
+
+/* ───────── BOD-03 · 8 nhóm nhiệm vụ ───────── */
+SCREENS['bod-03']={
+  group:'bod', nav:{label:'Nhóm nhiệm vụ',icon:'compass',count:8}, code:'BOD-03', title:'8 nhóm nhiệm vụ',
+  chips:[['Kỳ','Quý II/2027'],['Đơn vị','Toàn Đảng bộ'],['Hiển thị','Heatmap + thẻ']],
+  main(){
+    const done=GROUPS.reduce((s,g)=>s+g.done,0), tot=GROUPS.reduce((s,g)=>s+g.tot,0);
+    const weak=GROUPS.filter(g=>g.pct<75).length;
+    return `
+    <section class="stats c3" data-fig="Data/StatStrip">
+      ${C.stat({icon:'check',label:'KPI đạt mục tiêu toàn bộ 8 nhóm',value:`<span class="mono">${done}</span>`,unit:`/${tot} KPI`,
+        seg:[{w:done/tot*100,c:CV.b}],legend:[{t:'Tỷ lệ đạt',v:fx(done/tot*100)+'%'}]})}
+      ${C.stat({icon:'alert',label:'Nhóm dưới ngưỡng 75%',value:`<span class="mono">${weak}</span>`,unit:'/8 nhóm',
+        legend:GROUPS.filter(g=>g.pct<75).map(g=>({c:CLS[clsOf(g.pct)].c,t:'Nhóm '+g.i}))})}
+      ${C.stat({icon:'trend',label:'Nhóm dẫn đầu',value:'<span class="mono">94,2</span>',unit:'%',
+        legend:[{c:CV.a,t:'Nhóm 1 · Tăng cường lãnh đạo của Đảng'}],sub:'Hoàn thành 7/7 KPI'})}
+    </section>
+
+    ${C.listHead('Kết quả theo nhóm nhiệm vụ',8,'<span>Vạch dọc = ngưỡng mục tiêu 75%</span>')}
+    ${GROUPS.map(g=>{const cls=clsOf(g.pct);return `
+      <div class="row" data-fig="List/GroupRow">
+        <div class="row-main">
+          <span class="rank mono">${g.i}</span>
+          <span class="unit" style="font-weight:400">${g.name}</span>
+          ${C.pill(`${g.done}/${g.tot} KPI đạt`)}
+        </div>
+        ${C.track(g.pct,CLS[cls].c,{w:220})}
+        <div class="col c-tot mono">${fx(g.pct)}%</div>
+        <div class="col c-cls">${C.statusTag(cls)}</div>
+      </div>`}).join('')}
+
+    ${C.listHead('Ma trận nhóm nhiệm vụ × đơn vị','','<span>Ô = % KPI đạt của nhóm tại đơn vị</span>')}
+    ${heatmap()}`;
+  },
+  panel(){
+    return C.panelHead('Nhóm 3 · CĐS, hạ tầng số')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nhóm trọng điểm đang chậm</span><span class="mono">19/30</span></div>
+      ${C.callout('warn','alert','<b>Nhóm 3</b> chiếm 30/75 KPI nhưng chỉ đạt 71,8%. Đây là nhóm quyết định mức trưởng thành số Mức 4.','inline')}
+      ${KPI_IT.slice(0,7).map(k=>{const p=pctOf(k),cls=clsOf(p);return `
+        <button class="gp"><div class="gp-top"><span class="gp-id mono" style="width:34px;font-size:9.5px">${k.id}</span>
+          <span class="gp-nm">${k.n}</span><span class="gp-v mono" style="color:${CLS[cls].c}">${p}%</span></div>
+          <div class="gp-bot" style="padding-left:42px"><span class="gp-trk"><i style="width:${p}%;background:${CLS[cls].c}"></i></span>
+          <span class="gp-ct mono">${fx(k.pt)}/${k.max}</span></div></button>`}).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Đơn vị chủ trì</span></div>
+      ${C.kv('P.CNTT','<span class="mono">14 KPI</span>')}
+      ${C.kv('TT SCBD','<span class="mono">6 KPI</span>')}
+      ${C.kv('Các chi nhánh','<span class="mono">7 KPI</span>')}
+      ${C.kv('P.TCNL','<span class="mono">3 KPI</span>')}
+    </div>`;
+  }
+};
+
+/* ───────── BOD-04 · KPI Lớp A ───────── */
+SCREENS['bod-04']={
+  group:'bod', nav:{label:'KPI Lớp A',icon:'layers',count:17}, code:'BOD-04', title:'KPI Lớp A · Chỉ đạo – Điều hành',
+  chips:[['Kỳ','Quý II/2027'],['Lớp','A · Chỉ đạo'],['Gom theo','Xếp loại'],['Nguồn','Tất cả']],
+  main(){
+    const pt=sumPt(KPI_A), mx=sumMax(KPI_A);
+    const g=['A','B','C','D'].map(c=>({c,list:KPI_A.filter(k=>clsOf(pctOf(k))===c)}));
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'layers',label:'Điểm lớp A đạt được',value:`<span class="mono">${fx(pt)}</span>`,unit:`/${mx} điểm`,
+        seg:[{w:pt/mx*100,c:CV.b}],legend:[{t:'Tỷ lệ đạt',v:fx(pt/mx*100)+'%'},{t:'Quy đổi',v:fx(30*pt/mx)+'/30'}]})}
+      ${C.stat({icon:'check',label:'KPI đạt mục tiêu',value:`<span class="mono">${g[0].list.length+g[1].list.length}</span>`,unit:'/17 KPI',
+        seg:g.map(x=>({w:x.list.length/17*100,c:CLS[x.c].c})),
+        legend:g.map(x=>({c:CLS[x.c].c,t:x.c,v:x.list.length}))})}
+      ${C.stat({icon:'alert',label:'KPI đỏ cần can thiệp',value:`<span class="mono">${g[3].list.length}</span>`,unit:'KPI',
+        legend:g[3].list.map(k=>({c:CV.d,t:k.id})),sub:'Đều thuộc nhóm ATTT và nguồn lực tài chính'})}
+      ${C.stat({icon:'clock',label:'Chu kỳ báo cáo',value:'<span class="mono">17</span>',unit:'KPI',
+        legend:[{t:'Quý',v:KPI_A.filter(k=>k.cyc==='Quý').length},{t:'6 tháng',v:KPI_A.filter(k=>k.cyc==='6 tháng').length},{t:'Năm',v:KPI_A.filter(k=>k.cyc==='Năm').length}]})}
+    </section>
+
+    ${C.listHead('Danh mục KPI Lớp A',17,'<span>Điểm tối đa <span class="mono">33</span> · trọng số <span class="mono">30%</span></span>')}
+    <div class="row" style="padding-top:8px;padding-bottom:8px;font-size:11px;color:var(--muted-fg);font-weight:500">
+      <div class="row-main" style="padding-left:46px">Tên chỉ số</div>
+      <div class="col c-lay" style="width:70px">Mục tiêu</div>
+      <div class="col c-lay" style="width:64px">Thực hiện</div>
+      <div class="col c-trk" style="width:104px;justify-content:flex-start">Mức đạt</div>
+      <div class="col c-tot" style="width:52px">Điểm</div>
+      <div class="col c-cls" style="width:88px">Xếp loại</div>
+      <div class="col c-lay" style="width:84px;text-align:left;padding-left:8px">Chủ trì</div>
+    </div>
+    ${g.map(x=>x.list.length?C.groupHead(x.c,x.list.length,`${x.c==='A'?'≥ 90':x.c==='B'?'75 – < 90':x.c==='C'?'60 – < 75':'< 60'}% điểm KPI`)+x.list.map(C.kpiRow).join(''):'').join('')}
+    <div class="foot-note"><span>Mức đạt tính bằng <span class="mono">điểm đạt / điểm tối đa</span> của từng KPI</span><span>Nguồn dữ liệu ghi ở cột nhãn sau tên chỉ số</span></div>`;
+  },
+  panel(){
+    const byG={}; KPI_A.forEach(k=>{byG[k.g]=byG[k.g]||[];byG[k.g].push(k)});
+    const bySrc={}; KPI_A.forEach(k=>bySrc[k.src]=(bySrc[k.src]||0)+1);
+    return C.panelHead('Phân tích Lớp A')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Theo nhóm nhiệm vụ</span><span class="mono">17</span></div>
+      ${Object.keys(byG).map(i=>{const ks=byG[i],p=sumPt(ks)/sumMax(ks)*100;
+        return C.groupBar({i,name:GROUPS[i-1].name,short:GROUPS[i-1].short,pct:p,done:ks.filter(k=>pctOf(k)>=75).length,tot:ks.length})}).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nguồn dữ liệu</span></div>
+      ${Object.entries(bySrc).sort((a,b)=>b[1]-a[1]).map(([s,n])=>C.kv(s,`<span class="mono">${n}</span>`)).join('')}
+      <div class="al-o" style="margin-top:8px">Nguồn “Nhập tay” và “Đánh giá” cần minh chứng bắt buộc.</div>
+    </div>`;
+  }
+};
+
+/* ───────── BOD-05 · CĐS & CNTT ───────── */
+SCREENS['bod-05']={
+  group:'bod', nav:{label:'CĐS & CNTT',icon:'server',count:15}, code:'BOD-05', title:'Chuyển đổi số & Hạ tầng CNTT',
+  chips:[['Kỳ','Quý II/2027'],['Phạm vi','A.16–A.17 · B.31–B.37 · C.16–C.21'],['Chủ trì','P.CNTT']],
+  main(){
+    const pt=sumPt(KPI_IT),mx=sumMax(KPI_IT);
+    const red=KPI_IT.filter(k=>clsOf(pctOf(k))==='D');
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'server',label:'Mức độ sẵn sàng hạ tầng số',value:'<span class="mono">Mức 3</span>',unit:'/ mục tiêu Mức 4',
+        seg:[{w:75,c:CV.c}],legend:[{t:'A.17 · Smart Operations'}],sub:'Cần Cloud + Data Lake + nền tảng AI'})}
+      ${C.stat({icon:'layers',label:'Điểm lát cắt CĐS – CNTT',value:`<span class="mono">${fx(pt)}</span>`,unit:`/${mx} điểm`,
+        seg:[{w:pt/mx*100,c:CV.b}],legend:[{t:'Tỷ lệ đạt',v:fx(pt/mx*100)+'%'},{t:'Số KPI',v:KPI_IT.length}]})}
+      ${C.stat({icon:'shield',label:'An toàn thông tin (A.14)',value:'<span class="mono">2</span>',unit:'sự cố',
+        delta:{k:'down',t:'mục tiêu 0'},
+        legend:[{c:CV.d,t:'A.14 · SOC/SIEM'},{c:CV.b,t:'B.34 · SSO 81%'},{c:CV.c,t:'C.20 · PAM 78%'}]})}
+      ${C.stat({icon:'alert',label:'KPI đỏ của khối CNTT',value:`<span class="mono">${red.length}</span>`,unit:'KPI',
+        legend:red.map(k=>({c:CV.d,t:k.id})),sub:'Tập trung ở IoT/RTLS, AI Camera và WFO'})}
+    </section>
+
+    ${C.listHead('Chỉ số hạ tầng số và Smart Operations',KPI_IT.length,'<span>Nguồn: CMDB · ITSM · IAM · IoT Hub · VMS</span>')}
+    <div class="row" style="padding-top:8px;padding-bottom:8px;font-size:11px;color:var(--muted-fg);font-weight:500">
+      <div class="row-main" style="padding-left:46px">Tên chỉ số</div>
+      <div class="col c-lay" style="width:70px">Mục tiêu</div><div class="col c-lay" style="width:64px">Thực hiện</div>
+      <div class="col c-trk" style="width:104px;justify-content:flex-start">Mức đạt</div>
+      <div class="col c-tot" style="width:52px">Điểm</div><div class="col c-cls" style="width:88px">Xếp loại</div>
+      <div class="col c-lay" style="width:84px;text-align:left;padding-left:8px">Chủ trì</div>
+    </div>
+    ${KPI_IT.map(C.kpiRow).join('')}
+    ${C.callout('info','link','<b>Lộ trình tích hợp</b> — các chỉ số trên sẽ tự động hoá ở Phase 3 khi Database tập trung kết nối CMDB, ITSM, IAM/PAM, IoT Hub và VMS. Hiện tại vẫn nhập qua SharePoint.')}`;
+  },
+  panel(){
+    return C.panelHead('Hệ thống nguồn')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Kết nối theo giai đoạn</span><span class="mono">8</span></div>
+      ${INTEGRATIONS.map(x=>`<button class="al"><span class="al-ic">${x.ph==='Phase 2'?`<i class="dot-sm" style="background:var(--st-b)"></i>`:`<i class="dot-sm" style="background:var(--st-gray)"></i>`}</span>
+        <span class="al-b"><span class="al-t"><span class="al-code">${x.sys}</span><span class="al-lv">${x.ph}</span></span>
+        <span class="al-d">${x.how}</span><span class="al-o mono">${x.kpi}</span></span></button>`).join('')}
+    </div>`;
+  }
+};
+
+/* ───────── BOD-06 · Cảnh báo ───────── */
+SCREENS['bod-06']={
+  group:'bod', nav:{label:'Cảnh báo',icon:'alert',badge:7}, code:'BOD-06', title:'Cảnh báo & Kế hoạch xử lý',
+  chips:[['Kỳ','Quý II/2027'],['Mức độ','Tất cả'],['Trạng thái','Chưa đóng'],['Gom theo','Mức độ']],
+  main(){
+    const hi=ALERTS.filter(a=>a.lv==='CAO');
+    const md=ALERTS.filter(a=>a.lv!=='CAO');
+    const alertRow=a=>`
+      <div class="row" data-fig="List/AlertRow">
+        <div class="row-main">
+          <span style="width:14px;flex:none">${SICON[a.cls]}</span>
+          <span class="rank mono" style="width:auto;padding:0 6px">${a.code}</span>
+          <span class="unit" style="font-weight:400">${a.t}</span>
+          ${a.st==='Quá hạn'?C.pill('Quá hạn','danger'):''}
+        </div>
+        <div class="col c-lay" style="width:150px;text-align:left">${a.own}</div>
+        <div class="col c-lay" style="width:190px;text-align:left">${a.act}</div>
+        <div class="col c-lay mono" style="width:54px">${a.due}</div>
+        <div class="col c-cls" style="width:96px">${C.pill(a.st,a.st==='Quá hạn'?'danger':a.st==='Mới'?'':'warn')}</div>
+      </div>`;
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'alert',label:'Tổng cảnh báo đang mở',value:`<span class="mono">${ALERTS.length}</span>`,unit:'cảnh báo',
+        seg:[{w:hi.length/ALERTS.length*100,c:CV.d},{w:md.length/ALERTS.length*100,c:CV.c}],
+        legend:[{c:CV.d,t:'Mức cao',v:hi.length},{c:CV.c,t:'Trung bình',v:md.length}]})}
+      ${C.stat({icon:'clock',label:'Quá hạn xử lý',value:'<span class="mono">1</span>',unit:'cảnh báo',
+        legend:[{c:CV.d,t:'TT SCBD · quá 5 ngày'}],sub:'Cần nhắc bằng Power Automate'})}
+      ${C.stat({icon:'file',label:'Thiếu minh chứng',value:'<span class="mono">14</span>',unit:'/75 KPI',
+        seg:[{w:14/75*100,c:CV.orange}],legend:[{t:'Tập trung ở',v:'TT SCBD · TT ĐT'}]})}
+      ${C.stat({icon:'trend',label:'KPI giảm 2 kỳ liên tiếp',value:'<span class="mono">3</span>',unit:'KPI',
+        legend:[{c:CV.d,t:'A.14'},{c:CV.d,t:'A.15'},{c:CV.c,t:'B.31'}],sub:'Đưa vào chương trình giám sát của Ban CĐ'})}
+    </section>
+
+    ${C.listHead('Danh sách cảnh báo',ALERTS.length,'<span>Sắp theo mức độ rồi tới hạn xử lý</span>')}
+    <div class="row" style="padding-top:8px;padding-bottom:8px;font-size:11px;color:var(--muted-fg);font-weight:500">
+      <div class="row-main" style="padding-left:22px">Nội dung cảnh báo</div>
+      <div class="col c-lay" style="width:150px;text-align:left">Đơn vị chịu trách nhiệm</div>
+      <div class="col c-lay" style="width:190px;text-align:left">Hành động khắc phục</div>
+      <div class="col c-lay" style="width:54px">Hạn</div>
+      <div class="col c-cls" style="width:96px">Trạng thái</div>
+    </div>
+    ${C.groupHeadRaw('d',SICON.D,'Mức cao · cần quyết định của BOD',hi.length,'Ảnh hưởng trực tiếp KPI Lớp A')}
+    ${hi.map(alertRow).join('')}
+    ${C.groupHeadRaw('c',SICON.C,'Mức trung bình · theo dõi trong kỳ',md.length,'Ban Chỉ đạo giám sát')}
+    ${md.map(alertRow).join('')}
+    ${C.callout('err','alert','<b>Quy tắc sinh cảnh báo</b> — KPI xếp loại C/D · quá hạn nhập liệu · thiếu minh chứng bắt buộc · giảm điểm 2 kỳ liên tiếp. Mỗi cảnh báo bắt buộc gắn 1 bản ghi <span class="mono">Action_Log</span>.')}`;
+  },
+  panel(){
+    return C.panelHead('Kế hoạch hành động')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Action_Log đang mở</span><span class="mono">${ALERTS.length}</span></div>
+      ${ALERTS.map(a=>`<button class="al"><span class="al-ic"><i class="dot-sm" style="background:${CLS[a.cls].c};width:7px;height:7px"></i></span>
+        <span class="al-b"><span class="al-t"><span class="al-code mono">${a.code}</span><span class="al-lv ${a.lv==='CAO'?'hi':''}">${a.st}</span></span>
+        <span class="al-d">${a.act}</span><span class="al-o">${a.own} · hạn ${a.due}</span></span></button>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Chỉ tiêu xử lý</span></div>
+      ${C.kv('Đúng hạn','<span class="mono">4/7</span>')}
+      ${C.kv('Trễ hạn','<span class="mono up">1/7</span>')}
+      ${C.kv('Chưa phân công','<span class="mono">0</span>')}
+      ${C.kv('Đã đóng trong kỳ','<span class="mono">5</span>')}
+    </div>`;
+  }
+};
+
+/* ───────── BOD-07 · Xu hướng 2026–2030 ───────── */
+SCREENS['bod-07']={
+  group:'bod', nav:{label:'Xu hướng 2026–2030',icon:'trend'}, code:'BOD-07', title:'Xu hướng và lộ trình 2026 – 2030',
+  chips:[['Giai đoạn','2026 – 2030'],['Chỉ số','Tổng điểm Đảng bộ'],['Kịch bản','Dự báo tuyến tính']],
+  main(){
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'trend',label:'Điểm hiện tại (Quý II/2027)',value:'<span class="mono">78,8</span>',unit:'/100',delta:{k:'up',t:'▲ 10,4'},
+        seg:[{w:78.8,c:CV.b}],legend:[{t:'Mục tiêu 2027',v:'78,0'},{t:'Chênh',v:'+0,8'}]})}
+      ${C.stat({icon:'target',label:'Mục tiêu 2030',value:'<span class="mono">95,0</span>',unit:'/100',
+        seg:[{w:78.8,c:CV.b},{w:16.2,c:CV.gray}],legend:[{t:'Còn thiếu',v:'16,2 điểm'},{t:'Còn lại',v:'3,5 năm'}]})}
+      ${C.stat({icon:'compass',label:'Dự báo 2030 theo đà hiện tại',value:'<span class="mono">91,0</span>',unit:'/100',
+        delta:{k:'down',t:'▼ 4,0'},sub:'Cần tăng tốc nhóm 3, 6 và 8 để chạm mục tiêu'})}
+      ${C.stat({icon:'check',label:'Mốc đã hoàn thành',value:'<span class="mono">1</span>',unit:'/3 mốc',
+        legend:TREND.milestones.map((m,i)=>({c:i===0?CV.a:CV.gray,t:m.y}))})}
+    </section>
+
+    ${C.listHead('Diễn biến tổng điểm Đảng bộ','','<span>Đường liền = thực hiện · nét đứt xanh = dự báo · nét đứt xám = mục tiêu</span>')}
+    <div class="chart-legend" style="padding-top:14px">
+      <span><i class="lg-line" style="background:var(--st-b);height:2.5px"></i>Thực hiện</span>
+      <span><i class="lg-line" style="background:var(--st-b);opacity:.6"></i>Dự báo</span>
+      <span><i class="lg-line" style="background:var(--st-gray)"></i>Mục tiêu lộ trình</span>
+      <span><i class="lg-line" style="background:var(--st-orange);opacity:.6"></i>Mốc chiến lược</span>
+    </div>
+    <div class="chart-wrap" style="padding-top:0">${lineChart()}</div>
+
+    ${C.listHead('Bảng lộ trình theo năm',5)}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Năm</th><th class="num">Mục tiêu</th><th class="num">Thực hiện</th><th class="num">Dự báo</th><th class="num">Chênh lệch</th><th>Mốc chiến lược</th><th>Trạng thái</th></tr></thead>
+      <tbody>${TREND.years.map((y,i)=>{
+        const a=TREND.actual[i],f=TREND.forecast[i],t=TREND.target[i];
+        const v=a??f, gap=v-t, ms=TREND.milestones.find(m=>m.y===y);
+        return `<tr><td class="mono">${y}</td><td class="num mono muted">${fx(t)}</td>
+          <td class="num mono">${a===null?'—':fx(a)}</td>
+          <td class="num mono muted">${(f===null||a!==null)?'—':fx(f)}</td>
+          <td class="num mono ${gap>=0?'up':'down'}">${gap>=0?'+':''}${fx(gap)}</td>
+          <td>${ms?ms.t:'<span class="muted">—</span>'}</td>
+          <td>${a!==null?C.pill('Đã ghi nhận','ok'):C.pill('Dự báo')}</td></tr>`}).join('')}</tbody>
+    </table>
+    <div class="foot-note"><span>Dự báo tính theo tốc độ tăng bình quân 2026 – 2027</span><span>Gap dương = vượt mục tiêu lộ trình</span></div>`;
+  },
+  panel(){
+    return C.panelHead('Khoảng cách mục tiêu')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nhóm cần tăng tốc</span><span class="mono">3</span></div>
+      ${GROUPS.filter(g=>g.pct<80).map(C.groupBar).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Mốc chiến lược</span></div>
+      <div class="tl" style="padding:0">
+        ${TREND.milestones.map((m,i)=>`<div class="tl-item"><div class="tl-rail"><span class="d" style="background:${i===0?'var(--st-a)':'var(--st-gray)'}"></span><span class="l"></span></div>
+          <div class="tl-b"><div class="tl-t">${m.t}</div><div class="tl-m mono">${m.y}${i===0?' · đang triển khai':' · chưa bắt đầu'}</div></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Điều kiện chạm mục tiêu 2030</span></div>
+      ${C.kv('Tăng bình quân/năm','<span class="mono">+5,4 điểm</span>')}
+      ${C.kv('Đà hiện tại','<span class="mono">+4,1 điểm</span>')}
+      ${C.kv('Thiếu hụt','<span class="mono down">1,3 điểm/năm</span>')}
+    </div>`;
+  }
+};
+/* ══════════════════════════════════════════════════════════════════════════
+   5 · SCREENS · BAN CHỈ ĐẠO  (mục 9.2 của đặc tả)
+   ══════════════════════════════════════════════════════════════════════════ */
+SCREENS['bcd-01']={
+  group:'bcd', nav:{label:'Thẩm định & phê duyệt',icon:'gavel',badge:5}, code:'BCĐ-01', title:'Thẩm định & phê duyệt kỳ',
+  chips:[['Kỳ','Quý II/2027'],['Trạng thái','Chờ xử lý'],['Người thẩm định','Tất cả']],
+  main(){
+    const n=s=>UNITS.filter(u=>u.st===s).length;
+    const funnel=[['Đã gửi',12,CV.gray],['Đang thẩm định',n('review'),CV.cyan],['Đã duyệt',n('approved'),CV.a],['Trả lại',n('returned'),CV.d],['Còn nháp',n('draft'),CV.orange]];
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'send',label:'Đơn vị đã nộp phiếu',value:'<span class="mono">12</span>',unit:'/13 đơn vị',
+        seg:[{w:12/13*100,c:CV.b},{w:1/13*100,c:CV.orange}],legend:[{c:CV.b,t:'Đã nộp',v:12},{c:CV.orange,t:'Còn nháp',v:1}],
+        sub:'TT SCBD chưa gửi · quá hạn 5 ngày'})}
+      ${C.stat({icon:'gavel',label:'Đang chờ thẩm định',value:`<span class="mono">${n('review')}</span>`,unit:'phiếu',
+        legend:UNITS.filter(u=>u.st==='review').map(u=>({c:CV.cyan,t:u.code}))})}
+      ${C.stat({icon:'file',label:'Minh chứng chờ xác minh',value:'<span class="mono">23</span>',unit:'/78 file',
+        seg:[{w:55/78*100,c:CV.a},{w:23/78*100,c:CV.b}],legend:[{c:CV.a,t:'Đã xác minh',v:55},{c:CV.b,t:'Chờ',v:23}]})}
+      ${C.stat({icon:'clock',label:'Hạn chốt kỳ',value:'<span class="mono">20/07</span>',unit:'còn 5 ngày',
+        legend:[{c:CV.c,t:'Cần xử lý 6 phiếu trước hạn'}]})}
+    </section>
+
+    ${C.listHead('Phễu phê duyệt','','<span>Workflow 5 bước · trạng thái lấy từ <span class="mono">Approval_Workflow</span></span>')}
+    <div class="cards c2" style="grid-template-columns:1fr 1fr">
+      <div class="card" data-fig="Chart/Funnel">
+        <div class="ct">Trạng thái phiếu kỳ Quý II/2027</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:9px">
+          ${funnel.map(([n2,v,c])=>`<div style="display:flex;align-items:center;gap:10px">
+            <span style="width:112px;font-size:12px;color:var(--muted-fg);flex:none">${n2}</span>
+            <span class="trk no-mark" style="height:8px"><i style="width:${v/13*100}%;background:${c}"></i></span>
+            <span class="mono" style="width:26px;text-align:right;font-size:12px">${v}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Quy trình 5 bước</div>
+        ${C.stepper(STEPS).replace('class="stepper"','class="stepper" style="padding:14px 0 0"')}
+      </div>
+    </div>
+
+    ${C.listHead('Hàng đợi thẩm định',13,'<span>Bấm vào đơn vị để mở phiếu chấm điểm</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Đơn vị</th><th>Người gửi</th><th>Thời điểm gửi</th><th class="num">KPI</th><th class="num">Minh chứng</th><th class="num">Tổng điểm</th><th>Xếp loại</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+      <tbody>${UNITS.map(u=>{const cls=clsOf(u.t);return `<tr>
+        <td><b style="font-weight:500">${u.name}</b><div class="muted mono" style="font-size:11px">${u.code}</div></td>
+        <td class="muted">Bí thư chi bộ</td>
+        <td class="muted mono">${u.st==='draft'?'—':'14/07 · 16:2'+(u.r%10)}</td>
+        <td class="num mono">${u.st==='draft'?'69/75':'75/75'}</td>
+        <td class="num mono">${u.flag?'<span style="color:var(--st-d)">/6 thiếu</span>':'đủ'}</td>
+        <td class="num mono" style="font-weight:600">${fx(u.t)}</td>
+        <td>${C.statusTag(cls)}</td>
+        <td>${C.submitTag(u.st)}</td>
+        <td><div class="btn-row">${u.st==='review'?'<button class="btn primary" style="height:26px">Duyệt</button><button class="btn danger" style="height:26px">Trả lại</button>':'<button class="btn" style="height:26px">Xem</button>'}</div></td>
+      </tr>`}).join('')}</tbody>
+    </table>
+    ${C.callout('info','lock','<b>Khoá kỳ</b> — sau khi chốt, mọi <span class="mono">KPI_Submission</span> và <span class="mono">Evidence_File</span> của kỳ chuyển sang chỉ đọc. Mọi thay đổi sau đó phải mở kỳ bổ sung và ghi vào Audit log.')}`;
+  },
+  panel(){
+    return C.panelHead('Checklist thẩm định')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Bắt buộc kiểm tra</span><span class="mono">6</span></div>
+      ${[['Đủ 75 dòng KPI của kỳ',1],['Actual đúng kiểu dữ liệu và đơn vị',1],['Có minh chứng cho KPI bắt buộc',0],
+         ['Giải trình cho KPI xếp loại C/D',1],['Điểm tự tính khớp KPI Engine',1],['Không sửa sau khi gửi duyệt',0]]
+        .map(([t,ok])=>`<div class="kv"><span class="k" style="color:var(--fg)">${t}</span><span class="v" style="color:${ok?'var(--st-a)':'var(--st-c)'}">${ok?'Đạt':'Còn thiếu'}</span></div>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Đang chờ bạn xử lý</span><span class="mono">5</span></div>
+      ${UNITS.filter(u=>u.st==='review').map(u=>`<button class="al"><span class="al-ic"><i class="dot-sm" style="background:var(--st-cyan)"></i></span>
+        <span class="al-b"><span class="al-t"><span class="al-code">${u.name}</span></span>
+        <span class="al-d">Tổng ${fx(u.t)} · ${CLS[clsOf(u.t)].n}</span><span class="al-o">Gửi 14/07 · hạn xử lý 18/07</span></span></button>`).join('')}
+    </div>`;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   6 · SCREENS · CỔNG ĐƠN VỊ  (UNIT-01 → UNIT-07, mục 4 của đặc tả)
+   ══════════════════════════════════════════════════════════════════════════ */
+const myCount=s=>MY_KPI.filter(k=>k.st===s).length;
+const myPt=MY_KPI.reduce((s,k)=>s+k.pt,0), myMax=MY_KPI.reduce((s,k)=>s+k.max,0);
+
+SCREENS['unit-01']={
+  group:'unit', nav:{label:'Trang chủ đơn vị',icon:'home'}, code:'UNIT-01', title:`Trang chủ · ${ME.name}`,
+  chips:[['Đơn vị',ME.code],['Kỳ','Quý II/2027'],['Vai trò',ME.role]],
+  main(){
+    const kpiRowMine=k=>`
+      <div class="row" data-fig="List/MyKpiRow">
+        <div class="row-main">
+          <span class="rank mono" style="width:38px">${k.id}</span>
+          <span class="unit" style="font-weight:400">${k.n}</span>
+          ${k.ev?C.pill(`${k.ev} minh chứng`):C.pill('Chưa có minh chứng','warn')}
+          ${k.note?C.pill(k.note,'danger'):''}
+        </div>
+        <div class="col c-lay mono" style="width:78px">${k.tgt}</div>
+        <div class="col c-lay mono" style="width:70px;color:var(--fg)">${k.act||'—'}</div>
+        <div class="col c-tot mono" style="width:56px">${k.st==='empty'?'—':fx(k.pt)+'<span style="color:var(--muted-fg);font-weight:400">/'+k.max+'</span>'}</div>
+        <div class="col c-cls" style="width:118px">${C.submitTag(k.st)}</div>
+        <div class="col c-lay mono" style="width:48px">${k.due}</div>
+      </div>`;
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'edit',label:'KPI phải nhập kỳ này',value:`<span class="mono">${MY_KPI.length}</span>`,unit:'chỉ số',
+        seg:[{w:myCount('approved')/8*100,c:CV.a},{w:myCount('submitted')/8*100,c:CV.b},{w:myCount('draft')/8*100,c:CV.orange},{w:myCount('returned')/8*100,c:CV.d},{w:myCount('empty')/8*100,c:CV.gray}],
+        legend:[{c:CV.a,t:'Đã duyệt',v:myCount('approved')},{c:CV.b,t:'Chờ duyệt',v:myCount('submitted')},{c:CV.orange,t:'Nháp',v:myCount('draft')},{c:CV.d,t:'Trả lại',v:myCount('returned')},{c:CV.gray,t:'Chưa nhập',v:myCount('empty')}]})}
+      ${C.stat({icon:'calc',label:'Điểm tự tính tạm thời',value:`<span class="mono">${fx(myPt)}</span>`,unit:`/${myMax} điểm`,
+        seg:[{w:myPt/myMax*100,c:CV.b}],legend:[{t:'Mức đạt',v:fx(myPt/myMax*100)+'%'}],sub:'Chưa gồm KPI chưa nhập'})}
+      ${C.stat({icon:'alert',label:'Việc cần xử lý ngay',value:'<span class="mono">2</span>',unit:'mục',
+        legend:[{c:CV.d,t:'C.07 bị trả lại'},{c:CV.gray,t:'B.16 chưa nhập'}]})}
+      ${C.stat({icon:'clock',label:'Hạn nộp phiếu',value:'<span class="mono">15/07</span>',unit:'còn 1 ngày',
+        seg:[{w:88,c:CV.c}],legend:[{t:'Hạn thẩm định',v:'20/07'}]})}
+    </section>
+
+    ${C.listHead('Tiến độ phiếu chấm điểm','','<span class="mono">Quý II/2027</span>')}
+    ${C.stepper(STEPS)}
+
+    ${C.listHead('Danh sách KPI phải nhập',MY_KPI.length,'<span>Bấm vào dòng để mở màn hình nhập liệu</span>')}
+    <div class="row" style="padding-top:8px;padding-bottom:8px;font-size:11px;color:var(--muted-fg);font-weight:500">
+      <div class="row-main" style="padding-left:46px">Tên chỉ số</div>
+      <div class="col c-lay" style="width:78px">Mục tiêu</div><div class="col c-lay" style="width:70px">Thực hiện</div>
+      <div class="col c-tot" style="width:56px">Điểm</div><div class="col c-cls" style="width:118px">Trạng thái</div>
+      <div class="col c-lay" style="width:48px">Hạn</div>
+    </div>
+    ${MY_KPI.map(kpiRowMine).join('')}
+    ${C.callout('warn','alert','<b>C.07 bị trả lại</b> — Tổ thẩm định yêu cầu bổ sung file phụ lục số liệu quý I. Hạn bổ sung 16/07.')}`;
+  },
+  panel(){
+    return C.panelHead('Việc đến hạn')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nhắc việc</span><span class="mono">4</span></div>
+      ${[['Bổ sung minh chứng C.07','Hạn 16/07 · bị trả lại','var(--st-d)'],
+         ['Nhập actual cho B.16','Hạn 15/07 · chưa nhập','var(--st-gray)'],
+         ['Xác nhận tự chấm điểm','Sau khi hoàn tất 8/8 KPI','var(--st-b)'],
+         ['Gửi phê duyệt Bí thư','Trước 15/07 17:00','var(--st-c)']]
+        .map(([t,d,c])=>`<button class="al"><span class="al-ic"><i class="dot-sm" style="background:${c}"></i></span>
+          <span class="al-b"><span class="al-t"><span class="al-code">${t}</span></span><span class="al-d">${d}</span></span></button>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Vị trí của đơn vị</span></div>
+      ${C.kv('Xếp hạng kỳ trước',`<span class="mono">${ME.rank}/13</span>`)}
+      ${C.kv('Tổng điểm kỳ trước',`<span class="mono">${fx(ME.total)}</span>`)}
+      ${C.kv('Xếp loại',C.statusTag(ME.cls))}
+      ${C.kv('Ngưỡng điều hành','<span class="mono">≥ 75</span>')}
+    </div>`;
+  }
+};
+
+SCREENS['unit-02']={
+  group:'unit', nav:{label:'Nhập KPI',icon:'edit',count:8}, code:'UNIT-02', title:'Nhập liệu KPI',
+  chips:[['Kỳ','Quý II/2027'],['Chỉ số','A.15'],['Trạng thái','Chờ duyệt']],
+  main(){
+    const k=MY_KPI[1];
+    return `
+    ${C.listHead(`Phiếu nhập liệu · <span class="mono">${k.id}</span> ${k.n}`,'',
+      `<button class="btn" style="height:26px">${ICON.history} Lịch sử</button>`)}
+    <div class="form-sec" data-fig="Form/Section">
+      <div class="h">1 · Thông tin chỉ số</div>
+      <div class="hint">Các trường khoá lấy từ <span class="mono">KPI_Master</span> và <span class="mono">KPI_Target</span>, đơn vị không sửa được.</div>
+      <div class="fgrid c3">
+        ${C.field({label:'Mã KPI',val:k.id,locked:1})}
+        ${C.field({label:'Lớp chỉ số',val:'A · Chỉ đạo – Điều hành',locked:1})}
+        ${C.field({label:'Nhóm nhiệm vụ',val:'8 · Nguồn lực tài chính cho CĐS',locked:1})}
+        ${C.field({label:'Kỳ đánh giá',val:'Quý II/2027',locked:1})}
+        ${C.field({label:'Chu kỳ báo cáo',val:'6 tháng',locked:1})}
+        ${C.field({label:'Nguồn dữ liệu',val:'ERP / P.TCKT',locked:1})}
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <div class="h">2 · Kết quả thực hiện</div>
+      <div class="hint">Hệ thống kiểm tra kiểu dữ liệu, ngưỡng hợp lý rồi tự tính điểm theo KPI Engine.</div>
+      <div class="fgrid c3">
+        ${C.field({label:'Mục tiêu kỳ',val:'2,0',unit:'%',locked:1})}
+        ${C.field({label:'Giá trị thực hiện',val:'1,15',unit:'%',req:1,help:'Nhập số thập phân, dùng dấu phẩy',helpK:''})}
+        ${C.field({label:'Đơn vị tính',val:'% tổng chi phí',locked:1})}
+        ${C.field({label:'Mức đạt (tự tính)',val:'57,5 %',locked:1,help:'Dưới ngưỡng 60% → xếp loại D',helpK:'err'})}
+        ${C.field({label:'Điểm tự tính',val:'1,0 / 2,0',locked:1,help:'Công thức: Raw_Point = Max_Point × Achievement_Rate',helpK:''})}
+        ${C.field({label:'Xếp loại KPI',val:'D · Chưa hoàn thành',locked:1})}
+      </div>
+      <div class="fgrid c1" style="margin-top:14px">
+        ${C.field({label:'Giải trình',type:'textarea',req:1,rows:3,
+          val:'Ngân sách KHCN-ĐMST-CĐS 6 tháng đầu năm đạt 1,15% do một số hạng mục đầu tư Cloud và Data Lake bị lùi tiến độ đấu thầu sang quý III. Đơn vị đã trình điều chỉnh kế hoạch vốn và cam kết đạt 1,8% vào cuối năm.',
+          help:'Bắt buộc với KPI xếp loại C hoặc D'})}
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <div class="h">3 · Minh chứng</div>
+      <div class="hint">Tối thiểu 1 file cho KPI bắt buộc. File lưu ở SharePoint Document Library và gắn version.</div>
+      ${EVIDENCE.filter(e=>e.kpi===k.id).map(e=>`
+        <div class="row" style="padding-left:0;padding-right:0" data-fig="List/EvidenceRow">
+          <div class="row-main"><span style="width:16px;color:var(--muted-fg)">${ICON.file}</span>
+            <span class="unit" style="font-weight:400">${e.f}</span>
+            ${C.pill(e.ty)}${C.pill(e.v)}</div>
+          <div class="col c-lay" style="width:120px;text-align:left">${e.by}</div>
+          <div class="col c-lay mono" style="width:88px">${e.at}</div>
+          <div class="col c-cls" style="width:110px"><span class="status"><i class="dot-sm" style="background:${EV_ST[e.st].c}"></i>${EV_ST[e.st].n}</span></div>
+          <div class="col" style="width:80px"><button class="btn ghost" style="height:24px;padding:0 8px">Thay thế</button></div>
+        </div>`).join('')}
+      <div class="dropzone" style="margin-top:14px" data-fig="Form/Dropzone">
+        <b>Kéo thả file vào đây hoặc bấm để chọn</b>
+        PDF · DOCX · XLSX · PPTX · ảnh — tối đa 25 MB mỗi file
+      </div>
+    </div>
+
+    <div class="form-sec" style="border-bottom:0">
+      <div class="btn-row">
+        <button class="btn primary">${ICON.send} Gửi phê duyệt</button>
+        <button class="btn">${ICON.file} Lưu nháp</button>
+        <button class="btn ghost">Huỷ thay đổi</button>
+        <span class="stamp" style="margin-left:auto">Lưu tự động lúc <span class="mono">14/07 08:31</span></span>
+      </div>
+    </div>`;
+  },
+  panel(){
+    return C.panelHead('Quy tắc và lịch sử')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Kiểm tra dữ liệu</span></div>
+      ${[['Kiểu dữ liệu số thập phân','ok'],['Trong ngưỡng hợp lý 0 – 10%','ok'],['Có giải trình cho loại D','ok'],['Có tối thiểu 1 minh chứng','ok'],['Minh chứng đã xác minh','warn']]
+        .map(([t,s])=>`<div class="kv"><span class="k" style="color:var(--fg)">${t}</span><span class="v" style="color:${s==='ok'?'var(--st-a)':'var(--st-c)'}">${s==='ok'?'Đạt':'Chờ'}</span></div>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Lịch sử chỉ số A.15</span></div>
+      <div class="tl" style="padding:0">
+        ${[['Quý II/2027','1,15%','1,0/2,0','var(--st-d)'],['Quý I/2027','1,02%','0,9/2,0','var(--st-d)'],['Năm 2026','0,94%','0,8/2,0','var(--st-d)']]
+          .map(([p,a,pt,c])=>`<div class="tl-item"><div class="tl-rail"><span class="d" style="background:${c}"></span><span class="l"></span></div>
+            <div class="tl-b"><div class="tl-t">${p}</div><div class="tl-m mono">Thực hiện ${a} · điểm ${pt}</div></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Ghi vết</span></div>
+      ${C.kv('Người nhập gần nhất','Trần Văn Bình')}
+      ${C.kv('Thời điểm','<span class="mono">13/07 16:05</span>')}
+      ${C.kv('Calc_Version','<span class="mono">v2.1</span>')}
+    </div>`;
+  }
+};
+
+SCREENS['unit-03']={
+  group:'unit', nav:{label:'Minh chứng',icon:'file',count:6}, code:'UNIT-03', title:'Quản lý minh chứng',
+  chips:[['Kỳ','Quý II/2027'],['Trạng thái','Tất cả'],['Loại file','Tất cả']],
+  main(){
+    const n=s=>EVIDENCE.filter(e=>e.st===s).length;
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'file',label:'Tổng file trong kỳ',value:`<span class="mono">${EVIDENCE.length}</span>`,unit:'file',
+        seg:[{w:n('verified')/6*100,c:CV.a},{w:n('pending')/6*100,c:CV.b},{w:n('draft')/6*100,c:CV.gray},{w:n('rejected')/6*100,c:CV.d}],
+        legend:Object.keys(EV_ST).map(k=>({c:EV_ST[k].c,t:EV_ST[k].n,v:n(k)}))})}
+      ${C.stat({icon:'check',label:'KPI đã đủ minh chứng',value:'<span class="mono">5</span>',unit:'/8 KPI',
+        seg:[{w:5/8*100,c:CV.a}],legend:[{t:'Còn thiếu',v:'B.16 · C.09'}]})}
+      ${C.stat({icon:'alert',label:'File bị từ chối',value:'<span class="mono">1</span>',unit:'file',
+        legend:[{c:CV.d,t:'C.07 · thiếu phụ lục quý I'}]})}
+      ${C.stat({icon:'lock',label:'Dung lượng đã dùng',value:'<span class="mono">6,9</span>',unit:'MB / 500 MB',
+        seg:[{w:1.4,c:CV.b}],legend:[{t:'Lưu tại',v:'SharePoint'}]})}
+    </section>
+
+    ${C.listHead('Thư viện minh chứng',EVIDENCE.length,'<span>Mỗi lần thay thế tạo version mới, bản cũ vẫn giữ để truy vết</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Tên file</th><th>KPI</th><th>Loại</th><th class="num">Version</th><th>Người tải</th><th>Thời điểm</th><th class="num">Dung lượng</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${EVIDENCE.map(e=>`<tr>
+        <td><b style="font-weight:500">${e.f}</b>${e.note?`<div style="font-size:11px;color:var(--st-d);margin-top:2px">${e.note}</div>`:''}</td>
+        <td class="mono">${e.kpi}</td><td>${C.pill(e.ty)}</td><td class="num mono">${e.v}</td>
+        <td class="muted">${e.by}</td><td class="muted mono">${e.at}</td><td class="num mono muted">${e.sz}</td>
+        <td><span class="status"><i class="dot-sm" style="background:${EV_ST[e.st].c}"></i>${EV_ST[e.st].n}</span></td>
+        <td><div class="btn-row"><button class="btn ghost" style="height:24px;padding:0 8px">Xem</button><button class="btn ghost" style="height:24px;padding:0 8px">Thay thế</button></div></td>
+      </tr>`).join('')}</tbody>
+    </table>
+
+    <div class="form-sec" style="border-bottom:0">
+      <div class="dropzone" data-fig="Form/Dropzone">
+        <b>Tải minh chứng mới</b>
+        Chọn KPI trước khi tải · file sẽ gắn vào <span class="mono">Evidence_File</span> theo Submission_ID
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn primary">${ICON.plus} Tải file lên</button>
+        <button class="btn">${ICON.link} Gắn link SharePoint</button>
+        <button class="btn ghost">Tải mẫu đặt tên file</button>
+      </div>
+    </div>
+    ${C.callout('info','file','<b>Quy ước đặt tên</b> — <span class="mono">&lt;MãKPI&gt;_&lt;NộiDung&gt;_&lt;Kỳ&gt;.&lt;ext&gt;</span>. Đặt đúng tên giúp Power Query bóc tách và đối chiếu tự động khi chuyển sang Phase 3.')}`;
+  },
+  panel(){
+    return C.panelHead('Yêu cầu minh chứng')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Theo KPI</span><span class="mono">8</span></div>
+      ${MY_KPI.map(k=>`<div class="kv"><span class="k mono" style="color:var(--fg)">${k.id}</span>
+        <span class="v" style="color:${k.ev?'var(--st-a)':'var(--st-d)'}">${k.ev?k.ev+' file':'thiếu'}</span></div>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Loại minh chứng chấp nhận</span></div>
+      ${['Quyết định, nghị quyết, kế hoạch đã ký','Báo cáo có xác nhận của lãnh đạo','Ảnh chụp màn hình hệ thống nguồn','Bảng kê số liệu kèm công thức','Biên bản họp, hình ảnh hoạt động']
+        .map(t=>`<div class="kv"><span class="k" style="color:var(--fg)">${t}</span></div>`).join('')}
+    </div>`;
+  }
+};
+
+SCREENS['unit-04']={
+  group:'unit', nav:{label:'Tự chấm điểm',icon:'calc'}, code:'UNIT-04', title:'Tự chấm điểm',
+  chips:[['Kỳ','Quý II/2027'],['Đơn vị',ME.code],['Trạng thái','Chưa xác nhận']],
+  main(){
+    const layers=[{c:'A',pt:26.1,mx:33,w:30},{c:'B',pt:37.8,mx:63,w:45},{c:'C',pt:20.4,mx:32,w:25}];
+    const conv=l=>l.w*l.pt/l.mx;
+    const total=layers.reduce((s,l)=>s+conv(l),0);
+    return `
+    <section class="stats c3" data-fig="Data/StatStrip">
+      ${C.stat({icon:'calc',label:'Tổng điểm tạm tính',value:`<span class="mono">${fx(total)}</span>`,unit:'/100',
+        seg:layers.map((l,i)=>({w:conv(l),c:[CV.b,CV.cyan,CV.orange][i]})),
+        legend:layers.map((l,i)=>({c:[CV.b,CV.cyan,CV.orange][i],t:'Lớp '+l.c,v:fx(conv(l))}))})}
+      ${C.stat({icon:'target',label:'Xếp loại dự kiến',value:'<span class="mono">B</span>',unit:'· Hoàn thành tốt',
+        seg:[{w:total,c:CV.b}],legend:[{t:'Ngưỡng loại A',v:'≥ 90'},{t:'Còn thiếu',v:fx(90-total)}]})}
+      ${C.stat({icon:'check',label:'Mức độ hoàn tất phiếu',value:'<span class="mono">7</span>',unit:'/8 KPI đã nhập',
+        seg:[{w:7/8*100,c:CV.a},{w:1/8*100,c:CV.gray}],legend:[{c:CV.gray,t:'B.16 chưa nhập'}],
+        sub:'Phải nhập đủ mới gửi được phê duyệt'})}
+    </section>
+
+    ${C.listHead('Bảng tính điểm theo lớp','','<span class="mono">30×(ΣA/33) + 45×(ΣB/63) + 25×(ΣC/32)</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Lớp chỉ số</th><th class="num">Số KPI</th><th class="num">Điểm đạt</th><th class="num">Điểm tối đa</th><th class="num">Mức đạt</th><th class="num">Trọng số</th><th class="num">Điểm quy đổi</th><th>Đóng góp</th></tr></thead>
+      <tbody>
+        ${layers.map((l,i)=>`<tr>
+          <td><i class="dot-sm" style="background:${[CV.b,CV.cyan,CV.orange][i]};margin-right:8px"></i>Lớp ${l.c} · ${['Chỉ đạo – Điều hành','Quản trị – Tổ chức thực hiện','Chuyên đề – Theo dõi chuyên sâu'][i]}</td>
+          <td class="num mono">${[17,37,21][i]}</td>
+          <td class="num mono">${fx(l.pt)}</td><td class="num mono muted">${l.mx}</td>
+          <td class="num mono">${fx(l.pt/l.mx*100)}%</td>
+          <td class="num mono muted">${l.w}%</td>
+          <td class="num mono" style="font-weight:600">${fx(conv(l))}</td>
+          <td style="width:150px"><span class="trk no-mark"><i style="width:${conv(l)/l.w*100}%;background:${[CV.b,CV.cyan,CV.orange][i]}"></i></span></td>
+        </tr>`).join('')}
+        <tr style="background:rgba(94,106,210,.05)">
+          <td style="font-weight:600">Tổng cộng</td><td class="num mono">75</td>
+          <td class="num mono">${fx(layers.reduce((s,l)=>s+l.pt,0))}</td><td class="num mono muted">128</td>
+          <td class="num mono">—</td><td class="num mono muted">100%</td>
+          <td class="num mono" style="font-weight:600;font-size:14px">${fx(total)}</td>
+          <td>${C.statusTag('B')}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    ${C.listHead('Ngưỡng xếp loại',4)}
+    <div class="cards c4" style="grid-template-columns:repeat(4,1fr)">
+      ${['A','B','C','D'].map(c=>`<div class="card" data-fig="Data/ClassCard" style="border-color:${clsOf(total)===c?CLS[c].c:'var(--border)'}">
+        <div class="ct">${SICON[c]} ${c} · ${CLS[c].full}</div>
+        <div class="cd">${CLS[c].rule}</div>
+        <div class="cv mono" style="color:${CLS[c].c}">${clsOf(total)===c?'Đang ở đây':'—'}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="form-sec" style="border-bottom:0;border-top:1px solid var(--border)">
+      <div class="btn-row">
+        <button class="btn primary">${ICON.check} Xác nhận kết quả tự chấm</button>
+        <button class="btn">${ICON.down} Xuất bảng tính</button>
+        <span class="stamp" style="margin-left:auto">Phải nhập đủ 8/8 KPI mới xác nhận được</span>
+      </div>
+    </div>`;
+  },
+  panel(){
+    return C.panelHead('Đối chiếu KPI Engine')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Công thức áp dụng</span><span class="mono">v2.1</span></div>
+      ${C.kv('Achievement_Rate','Actual / Target')}
+      ${C.kv('Raw_Point','Max_Point × Rate')}
+      ${C.kv('Weighted_Point','Σ Raw × trọng số lớp')}
+      ${C.kv('Classification','90 / 75 / 60')}
+      <div class="al-o" style="margin-top:8px">Trường công thức bị khoá, chỉ thay đổi qua cấu hình quản trị.</div>
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>So với kỳ trước</span></div>
+      ${C.kv('Quý I/2027','<span class="mono">82,8</span>')}
+      ${C.kv('Quý II/2027','<span class="mono">84,3</span>')}
+      ${C.kv('Chênh lệch','<span class="mono up">▲ 1,5</span>')}
+      ${C.kv('Xếp hạng dự kiến','<span class="mono">5/13</span>')}
+    </div>`;
+  }
+};
+
+SCREENS['unit-05']={
+  group:'unit', nav:{label:'Gửi phê duyệt',icon:'send'}, code:'UNIT-05', title:'Gửi phê duyệt',
+  chips:[['Kỳ','Quý II/2027'],['Người duyệt','Bí thư chi bộ'],['Hạn','15/07 17:00']],
+  main(){
+    return `
+    ${C.listHead('Tiến trình phê duyệt','','<span class="mono">Approval_Workflow · 5 bước</span>')}
+    ${C.stepper(STEPS)}
+
+    <div class="form-sec">
+      <div class="h">Phiếu tổng hợp gửi duyệt</div>
+      <div class="hint">Kiểm tra lại toàn bộ trước khi gửi. Sau khi gửi, phiếu chuyển sang chỉ đọc cho tới khi được duyệt hoặc trả lại.</div>
+      <div class="fgrid c3">
+        ${C.field({label:'Đơn vị',val:ME.name,locked:1})}
+        ${C.field({label:'Kỳ đánh giá',val:'Quý II/2027',locked:1})}
+        ${C.field({label:'Số KPI trong phiếu',val:'8 / 8',locked:1})}
+        ${C.field({label:'Tổng điểm tự chấm',val:'84,3 / 100',locked:1})}
+        ${C.field({label:'Xếp loại dự kiến',val:'B · Hoàn thành tốt',locked:1})}
+        ${C.field({label:'Số minh chứng',val:'12 file · 5 chờ xác minh',locked:1})}
+      </div>
+      <div class="fgrid c1" style="margin-top:14px">
+        ${C.field({label:'Ý kiến của đơn vị gửi kèm',type:'textarea',rows:3,ph:'Nêu bối cảnh, khó khăn và đề xuất của đơn vị trong kỳ…',
+          val:'Đơn vị hoàn thành 7/8 chỉ số. Riêng B.16 giải ngân vốn CĐS chưa có số liệu do quyết toán quý II chưa khoá sổ, đơn vị xin bổ sung trước 18/07.'})}
+      </div>
+    </div>
+
+    <div class="form-sec">
+      <div class="h">Điều kiện bắt buộc trước khi gửi</div>
+      <div class="hint">Nút gửi chỉ mở khi toàn bộ điều kiện đạt.</div>
+      ${[['Đã nhập đủ 8/8 KPI của kỳ',0],['Có giải trình cho mọi KPI loại C và D',1],['Có minh chứng cho KPI bắt buộc',1],
+         ['Đã xác nhận bảng tự chấm điểm',1],['Xử lý xong KPI bị trả lại kỳ trước',0]]
+        .map(([t,ok])=>`<div class="row" style="padding-left:0;padding-right:0">
+          <div class="row-main"><span style="width:16px;color:${ok?'var(--st-a)':'var(--st-d)'}">${ok?ICON.check:ICON.alert}</span>
+          <span class="unit" style="font-weight:400">${t}</span></div>
+          <div class="col c-cls" style="width:110px">${ok?C.pill('Đạt','ok'):C.pill('Chưa đạt','danger')}</div></div>`).join('')}
+    </div>
+
+    <div class="form-sec" style="border-bottom:0">
+      <div class="btn-row">
+        <button class="btn primary" style="opacity:.45;cursor:not-allowed">${ICON.send} Gửi phê duyệt</button>
+        <button class="btn">Thu hồi phiếu đã gửi</button>
+        <button class="btn ghost">Xem bản in phiếu</button>
+        <span class="stamp" style="margin-left:auto">Còn 2 điều kiện chưa đạt</span>
+      </div>
+    </div>`;
+  },
+  panel(){
+    return C.panelHead('Luồng duyệt')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Người xử lý</span></div>
+      ${[['Nguyễn Thị Hà','Đầu mối nhập liệu','done'],['Trần Văn Bình','Bí thư chi bộ · duyệt cấp 1','done'],
+         ['Tổ thẩm định Ban CĐ','Thẩm định nội dung','current'],['VP Đảng ủy','Chốt kỳ và công bố','todo']]
+        .map(([n,r,st])=>`<button class="al"><span class="al-ic"><i class="dot-sm" style="background:${st==='done'?'var(--st-a)':st==='current'?'var(--st-b)':'var(--st-gray)'}"></i></span>
+          <span class="al-b"><span class="al-t"><span class="al-code">${n}</span></span><span class="al-d">${r}</span></span></button>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Nếu bị trả lại</span></div>
+      <div class="al-d" style="margin:0">Phiếu quay về trạng thái <b style="color:var(--fg)">Nháp</b>, đơn vị bổ sung theo lý do trả lại rồi gửi lại. Mọi lượt gửi đều lưu vào Audit log kèm <span class="mono">Returned_Reason</span>.</div>
+    </div>`;
+  }
+};
+
+SCREENS['unit-06']={
+  group:'unit', nav:{label:'Lịch sử KPI',icon:'history'}, code:'UNIT-06', title:'Lịch sử KPI của đơn vị',
+  chips:[['Đơn vị',ME.code],['Khoảng thời gian','5 kỳ gần nhất'],['Chỉ số','Tổng điểm']],
+  main(){
+    const pts=HISTORY.map(h=>h.t).reverse();
+    const W=980,H=140,PL=10,PR=10,PT=12,PB=22;
+    const X=i=>PL+i*(W-PL-PR)/(pts.length-1), Y=v=>PT+(1-(v-70)/(90-70))*(H-PT-PB);
+    const d=pts.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+    const spark=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" data-fig="Chart/Sparkline">
+      <line x1="${PL}" x2="${W-PR}" y1="${Y(75)}" y2="${Y(75)}" stroke="var(--st-gray)" stroke-dasharray="4 4"/>
+      <text x="${W-PR}" y="${Y(75)-6}" text-anchor="end" font-size="10" fill="var(--muted-fg)">Ngưỡng 75</text>
+      <path d="${d} L${X(pts.length-1)} ${H-PB} L${X(0)} ${H-PB} Z" fill="var(--st-b)" fill-opacity=".10"/>
+      <path d="${d}" stroke="var(--st-b)" stroke-width="2" fill="none"/>
+      ${pts.map((v,i)=>`<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="var(--st-b)" stroke="var(--container)" stroke-width="2"/>
+        <text x="${X(i)}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--muted-fg)">${HISTORY.slice().reverse()[i].p}</text>`).join('')}
+    </svg>`;
+    return `
+    <section class="stats c3" data-fig="Data/StatStrip">
+      ${C.stat({icon:'trend',label:'Điểm kỳ gần nhất',value:'<span class="mono">84,3</span>',unit:'/100',delta:{k:'up',t:'▲ 1,5'},
+        seg:[{w:84.3,c:CV.b}],legend:[{t:'Xếp loại',v:'B · HTT'},{t:'Hạng',v:'5/13'}]})}
+      ${C.stat({icon:'history',label:'Số kỳ đã đánh giá',value:`<span class="mono">${HISTORY.length}</span>`,unit:'kỳ',
+        legend:[{t:'Kỳ gốc',v:'6T đầu 2026'},{t:'Tăng tổng',v:'+7,9'}]})}
+      ${C.stat({icon:'file',label:'Minh chứng đã nộp',value:`<span class="mono">${HISTORY.reduce((s,h)=>s+h.ev,0)}</span>`,unit:'file',
+        legend:[{t:'Bị từ chối',v:'3'},{t:'Tỷ lệ đạt',v:'96,9%'}]})}
+    </section>
+
+    ${C.listHead('Diễn biến tổng điểm qua các kỳ','','<span>Vạch đứt = ngưỡng điều hành 75 điểm</span>')}
+    <div class="chart-wrap">${spark}</div>
+
+    ${C.listHead('Bảng lịch sử',HISTORY.length,'<span>Bấm 1 kỳ để xem phiếu và minh chứng của kỳ đó</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Kỳ đánh giá</th><th class="num">Tổng điểm</th><th>Xếp loại</th><th class="num">Δ so kỳ trước</th><th class="num">Minh chứng</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${HISTORY.map(h=>`<tr>
+        <td><b style="font-weight:500">${h.p}</b></td>
+        <td class="num mono" style="font-weight:600">${fx(h.t)}</td>
+        <td>${C.statusTag(h.cls)}</td>
+        <td class="num">${C.delta(h.d)}</td>
+        <td class="num mono muted">${h.ev}</td>
+        <td class="muted">${h.note}</td>
+        <td><button class="btn ghost" style="height:24px;padding:0 8px">Mở phiếu</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <div class="foot-note"><span>Nguồn <span class="mono">Score_Result</span> lọc theo Org_ID của đơn vị</span><span>Chỉ hiển thị kỳ đã chốt và kỳ đang mở</span></div>`;
+  },
+  panel(){
+    return C.panelHead('So sánh chỉ số')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>KPI cải thiện tốt nhất</span></div>
+      ${[['B.14','+0,6 điểm',CV.a],['A.12','+0,3 điểm',CV.a],['C.08','+0,2 điểm',CV.a]]
+        .map(([id,d,c])=>`<div class="kv"><span class="k mono" style="color:var(--fg)">${id}</span><span class="v mono" style="color:${c}">${d}</span></div>`).join('')}
+      <div class="pn-lbl" style="margin-top:14px"><span>KPI đi lùi</span></div>
+      ${[['A.15','−0,1 điểm',CV.d],['C.07','−0,3 điểm',CV.d]]
+        .map(([id,d,c])=>`<div class="kv"><span class="k mono" style="color:var(--fg)">${id}</span><span class="v mono" style="color:${c}">${d}</span></div>`).join('')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Ghi chú kỳ</span></div>
+      <div class="al-d" style="margin:0">Kỳ 6T đầu 2026 là kỳ gốc, không có Δ. Các kỳ đã chốt bị khoá, chỉ mở lại qua kỳ bổ sung.</div>
+    </div>`;
+  }
+};
+
+SCREENS['unit-07']={
+  group:'unit', nav:{label:'Báo cáo đơn vị',icon:'report'}, code:'UNIT-07', title:'Báo cáo đơn vị',
+  chips:[['Kỳ','Quý II/2027'],['Loại','Tất cả'],['Định dạng','PDF · Word · Excel']],
+  main(){
+    const reports=[
+      {n:'Báo cáo tháng',      d:'Tổng hợp KPI có chu kỳ tháng, dành cho họp giao ban đơn vị.', f:'PDF · Excel', c:'Tháng 6/2027', st:'Sẵn sàng'},
+      {n:'Báo cáo quý',        d:'Phiếu chấm điểm đầy đủ 75 KPI kèm giải trình và danh mục minh chứng.', f:'PDF · Word',  c:'Quý II/2027', st:'Sẵn sàng'},
+      {n:'Báo cáo 6 tháng',    d:'So sánh 2 quý, phân tích nhóm nhiệm vụ và kế hoạch khắc phục.', f:'PDF · Word',  c:'6T đầu 2027', st:'Chờ chốt kỳ'},
+      {n:'Báo cáo năm',        d:'Tổng kết năm, đối chiếu lộ trình 2026 – 2030 và xếp hạng toàn Đảng bộ.', f:'PDF · Word · Excel', c:'Năm 2026', st:'Đã phát hành'},
+    ];
+    return `
+    ${C.listHead('Bộ báo cáo của đơn vị',reports.length,'<span>File xuất lấy dữ liệu từ kỳ đã chốt</span>')}
+    <div class="cards c2">
+      ${reports.map(r=>`<div class="card" data-fig="Data/ReportCard">
+        <div class="ct"><span style="width:16px;color:var(--muted-fg)">${ICON.report}</span>${r.n}
+          ${r.st==='Sẵn sàng'?C.pill(r.st,'ok'):r.st==='Đã phát hành'?C.pill(r.st):C.pill(r.st,'warn')}</div>
+        <div class="cd">${r.d}</div>
+        <div class="kv" style="margin-top:10px"><span class="k">Kỳ dữ liệu</span><span class="v mono">${r.c}</span></div>
+        <div class="kv" style="padding-top:0"><span class="k">Định dạng</span><span class="v">${r.f}</span></div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn primary" style="height:28px">${ICON.down} Xuất file</button>
+          <button class="btn" style="height:28px">Xem trước</button>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    ${C.listHead('Lịch sử xuất báo cáo',5)}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Tên file</th><th>Loại</th><th>Kỳ</th><th>Người xuất</th><th>Thời điểm</th><th>Định dạng</th><th></th></tr></thead>
+      <tbody>${[
+        ['BC_Quy2_2027_PKHDT.pdf','Báo cáo quý','Quý II/2027','Nguyễn Thị Hà','14/07 09:12','PDF'],
+        ['BC_Quy2_2027_PKHDT.xlsx','Bảng số liệu','Quý II/2027','Nguyễn Thị Hà','14/07 09:14','Excel'],
+        ['BC_Thang6_2027_PKHDT.pdf','Báo cáo tháng','Tháng 6/2027','Trần Văn Bình','02/07 15:40','PDF'],
+        ['BC_Nam2026_PKHDT.docx','Báo cáo năm','Năm 2026','VP Đảng ủy','18/01 10:05','Word'],
+        ['BC_Quy1_2027_PKHDT.pdf','Báo cáo quý','Quý I/2027','Nguyễn Thị Hà','12/04 08:55','PDF'],
+      ].map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td class="muted">${r[2]}</td><td class="muted">${r[3]}</td><td class="muted mono">${r[4]}</td><td>${C.pill(r[5])}</td><td><button class="btn ghost" style="height:24px;padding:0 8px">Tải lại</button></td></tr>`).join('')}</tbody>
+    </table>
+    ${C.callout('info','refresh','<b>Nguồn số liệu</b> — báo cáo lấy từ cùng Semantic Model với Dashboard BOD nên số liệu luôn khớp. Nếu kỳ chưa chốt, file xuất được đóng dấu “Số liệu tạm tính”.')}`;
+  },
+  panel(){
+    return C.panelHead('Mẫu và phân phối')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Kênh phân phối</span></div>
+      ${C.kv('Power BI App','Tự động')}
+      ${C.kv('Microsoft Teams','Đăng theo lịch')}
+      ${C.kv('SharePoint Portal','Thư mục kỳ')}
+      ${C.kv('Email tóm tắt','Thứ hai hàng tuần')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Lưu ý bảo mật</span></div>
+      <div class="al-d" style="margin:0">Báo cáo mang nhãn nhạy cảm (sensitivity label). Không chia sẻ ra ngoài tổ chức. Mọi lượt export đều ghi vào Audit log.</div>
+    </div>`;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   7 · SCREENS · QUẢN TRỊ  (mục 8 và 11 của đặc tả)
+   ══════════════════════════════════════════════════════════════════════════ */
+function starSchema(){
+  const B=(x,y,t,s,fill)=>`<g><rect x="${x}" y="${y}" width="164" height="46" rx="8" class="dg-node" ${fill?`fill="${fill}"`:''}/>
+    <text x="${x+12}" y="${y+19}" class="dg-t">${t}</text><text x="${x+12}" y="${y+34}" class="dg-s">${s}</text></g>`;
+  const L=(x1,y1,x2,y2)=>`<path class="dg-l" d="M${x1} ${y1} C${(x1+x2)/2} ${y1}, ${(x1+x2)/2} ${y2}, ${x2} ${y2}"/>`;
+  return `<svg viewBox="0 0 1000 382" width="100%" height="382" data-fig="Diagram/StarSchema">
+    ${L(184,63,420,113)}${L(184,133,420,113)}${L(184,203,420,113)}${L(184,273,420,133)}
+    ${L(420,133,420,213)}${L(584,113,800,63)}${L(584,113,800,133)}${L(584,233,800,273)}
+    ${L(184,203,420,233)}${L(184,133,420,233)}
+    ${B(20,40,'KPI_Master','Dimension · 75 KPI')}
+    ${B(20,110,'Org_Unit','Dimension · 14 đơn vị')}
+    ${B(20,180,'Assessment_Period','Dimension · kỳ đánh giá')}
+    ${B(20,250,'Task_Group','Dimension · 8 nhóm')}
+    ${B(420,90,'KPI_Submission','Fact · actual nhập liệu','rgba(94,106,210,.10)')}
+    ${B(420,210,'Score_Result','Fact · điểm và xếp loại','rgba(94,106,210,.10)')}
+    ${B(800,40,'Evidence_File','Fact · minh chứng')}
+    ${B(800,110,'Approval_Workflow','Fact · trạng thái duyệt')}
+    ${B(800,250,'Action_Log','Fact · KPI đỏ/vàng')}
+    ${B(20,320,'KPI_Target','Dimension · mục tiêu kỳ')}
+    ${B(800,320,'User_Access_Map','Bảng RLS động')}
+    ${L(184,343,420,133)}${L(184,343,420,233)}${L(584,233,800,343)}
+  </svg>`;
+}
+SCREENS['adm-01']={
+  group:'adm', nav:{label:'Mô hình dữ liệu',icon:'db'}, code:'ADM-01', title:'Mô hình dữ liệu & Data Dictionary',
+  chips:[['Mô hình','Star schema'],['Nền tảng','Power BI Semantic Model'],['Phiên bản','v3.0']],
+  main(){
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'db',label:'Bảng trong Semantic Model',value:'<span class="mono">11</span>',unit:'bảng',
+        seg:[{w:6/11*100,c:CV.b},{w:5/11*100,c:CV.cyan}],legend:[{c:CV.b,t:'Dimension',v:6},{c:CV.cyan,t:'Fact',v:5}]})}
+      ${C.stat({icon:'layers',label:'Chỉ số trong KPI_Master',value:'<span class="mono">75</span>',unit:'KPI',
+        seg:[{w:17/75*100,c:CV.b},{w:37/75*100,c:CV.cyan},{w:21/75*100,c:CV.orange}],
+        legend:[{c:CV.b,t:'A',v:17},{c:CV.cyan,t:'B',v:37},{c:CV.orange,t:'C',v:21}]})}
+      ${C.stat({icon:'server',label:'Nguồn dữ liệu kết nối',value:'<span class="mono">8</span>',unit:'hệ thống',
+        legend:[{t:'Phase 2',v:1},{t:'Phase 3',v:7}]})}
+      ${C.stat({icon:'refresh',label:'Measure DAX đã định nghĩa',value:'<span class="mono">42</span>',unit:'measure',
+        legend:[{t:'Có phiên bản',v:'42/42'}],sub:'Tái sử dụng cho mọi report BOD và đơn vị'})}
+    </section>
+
+    ${C.listHead('Sơ đồ quan hệ','','<span>Fact ở giữa · Dimension bao quanh · quan hệ 1 – nhiều</span>')}
+    <div class="diagram">${starSchema()}</div>
+
+    ${C.listHead('Data Dictionary',DICT.length,'<span>Khoá chính in đậm · trường chính liệt kê theo thứ tự dùng</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th style="width:150px">Bảng</th><th style="width:190px">Khoá chính / ngoại</th><th>Trường chính</th><th style="width:170px">Vai trò trong Power BI</th></tr></thead>
+      <tbody>${DICT.map(d=>`<tr>
+        <td class="mono" style="font-weight:600">${d.t}</td>
+        <td class="mono muted" style="font-size:11.5px">${d.k}</td>
+        <td class="mono" style="font-size:11.5px;line-height:1.6">${d.f}</td>
+        <td class="muted">${d.r}</td></tr>`).join('')}</tbody>
+    </table>
+
+    ${C.listHead('Phương án nguồn dữ liệu',3,'<span>Lộ trình Excel → SharePoint → Database</span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Phương án</th><th>Giai đoạn</th><th>Workflow phê duyệt</th><th>Khả năng mở rộng</th><th>Audit &amp; lineage</th><th>Đánh giá</th></tr></thead>
+      <tbody>${SOURCES.map(s=>`<tr><td><b style="font-weight:500">${s.n}</b></td><td>${C.pill(s.ph)}</td>
+        <td class="muted">${s.wf}</td><td class="muted">${s.sc}</td><td class="muted">${s.au}</td>
+        <td>${C.statusTag(s.cl)}</td></tr>`).join('')}</tbody>
+    </table>
+    ${C.callout('info','db','<b>Nguyên tắc</b> — Power BI chỉ là lớp mô hình hoá và hiển thị. Không dùng Power BI làm nơi nhập liệu. Khi đổi nguồn từ Excel sang SharePoint rồi Database, giữ nguyên Semantic Model và bộ measures cốt lõi.')}`;
+  },
+  panel(){
+    return C.panelHead('Tích hợp hệ thống')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Hệ thống nguồn</span><span class="mono">${INTEGRATIONS.length}</span></div>
+      ${INTEGRATIONS.map(x=>`<button class="al"><span class="al-ic"><i class="dot-sm" style="background:${x.ph==='Phase 2'?'var(--st-b)':'var(--st-gray)'}"></i></span>
+        <span class="al-b"><span class="al-t"><span class="al-code">${x.sys}</span><span class="al-lv">${x.ph}</span></span>
+        <span class="al-d">${x.how}</span><span class="al-o mono">${x.kpi}</span></span></button>`).join('')}
+    </div>`;
+  }
+};
+
+SCREENS['adm-02']={
+  group:'adm', nav:{label:'Vận hành & bảo mật',icon:'shield'}, code:'ADM-02', title:'Refresh · Governance · RLS · Audit',
+  chips:[['Workspace','VIAGS-KPI-NQ57-PROD'],['Gateway','On-premises'],['Nhãn','Nội bộ – Hạn chế']],
+  main(){
+    const roles=[
+      ['BOD / BTV','Toàn bộ 14 đơn vị','Xem','—','—','Có'],
+      ['Ban Chỉ đạo','Toàn bộ 14 đơn vị','Xem','Duyệt','Yêu cầu bổ sung','Có'],
+      ['Tổ thẩm định','Phạm vi được giao','Xem','Duyệt','Trả lại','Không'],
+      ['Bí thư đơn vị','Đơn vị của mình','Xem','Duyệt cấp 1','—','Không'],
+      ['Đầu mối nhập liệu','Đơn vị của mình','Xem · Sửa','—','—','Không'],
+      ['VP Đảng ủy','Toàn bộ','Xem · Sửa danh mục','Chốt kỳ','Khoá kỳ','Có'],
+    ];
+    return `
+    <section class="stats c4" data-fig="Data/StatStrip">
+      ${C.stat({icon:'refresh',label:'Refresh gần nhất',value:'<span class="mono">03:00</span>',unit:'15/07',
+        legend:[{c:CV.a,t:'Thành công'},{t:'Thời gian',v:'04:12'}],sub:'Lịch: 03:00 và 15:00 hằng ngày'})}
+      ${C.stat({icon:'check',label:'Tỷ lệ refresh thành công 30 ngày',value:'<span class="mono">96,7</span>',unit:'%',
+        seg:[{w:96.7,c:CV.a},{w:3.3,c:CV.d}],legend:[{c:CV.a,t:'Thành công',v:58},{c:CV.d,t:'Lỗi',v:2}]})}
+      ${C.stat({icon:'shield',label:'Người dùng có quyền',value:'<span class="mono">64</span>',unit:'tài khoản',
+        legend:[{t:'Nhóm bảo mật',v:6},{t:'Xem toàn bộ',v:11}]})}
+      ${C.stat({icon:'alert',label:'Lỗi chất lượng dữ liệu đang mở',value:'<span class="mono">4</span>',unit:'lỗi',
+        legend:[{c:CV.d,t:'Thiếu evidence',v:2},{c:CV.c,t:'Sai kiểu dữ liệu',v:1},{c:CV.c,t:'Ngoài ngưỡng',v:1}]})}
+    </section>
+
+    ${C.listHead('Lịch refresh theo giai đoạn',3)}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Nguồn</th><th>Cách refresh</th><th>Tần suất</th><th>Gateway</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td><b style="font-weight:500">Excel template</b> ${C.pill('MVP')}</td><td class="muted">Theo lịch sau hạn nộp hoặc refresh thủ công khi chốt kỳ</td><td class="mono">Theo kỳ</td><td class="muted">Không bắt buộc</td><td class="muted">Phải khoá cấu trúc mẫu và quy ước tên file</td></tr>
+        <tr><td><b style="font-weight:500">SharePoint Lists/Docs</b> ${C.pill('Phase 2')}</td><td class="muted">Scheduled refresh, tách refresh dữ liệu nhập và mô hình điểm</td><td class="mono">2 lần/ngày</td><td class="muted">Không cần</td><td class="muted">Power Automate nhắc hạn và khoá bản ghi sau duyệt</td></tr>
+        <tr><td><b style="font-weight:500">Database tập trung</b> ${C.pill('Phase 3')}</td><td class="muted">Incremental refresh cho bảng fact nhiều kỳ</td><td class="mono">Mỗi giờ</td><td class="muted">On-premises gateway</td><td class="muted">Có cảnh báo thất bại và quy trình xử lý credential</td></tr>
+      </tbody>
+    </table>
+
+    ${C.listHead('Phân quyền và RLS động',roles.length,'<span>Bảng <span class="mono">User_Access_Map</span> + <span class="mono">USERPRINCIPALNAME()</span></span>')}
+    <table class="tbl" data-fig="Data/Table">
+      <thead><tr><th>Vai trò</th><th>Phạm vi dữ liệu</th><th>Quyền xem/sửa</th><th>Phê duyệt</th><th>Hành động đặc biệt</th><th class="num">Xem toàn bộ</th></tr></thead>
+      <tbody>${roles.map(r=>`<tr><td><b style="font-weight:500">${r[0]}</b></td><td class="muted">${r[1]}</td><td>${r[2]}</td>
+        <td class="muted">${r[3]}</td><td class="muted">${r[4]}</td>
+        <td class="num">${r[5]==='Có'?C.pill('Có','ok'):C.pill('Không')}</td></tr>`).join('')}</tbody>
+    </table>
+
+    ${C.listHead('Governance & Data Quality',4)}
+    <div class="cards c2">
+      <div class="card"><div class="ct">${ICON.db} Chuẩn đặt tên</div>
+        <div class="cd">Workspace / report / dataset theo mẫu <span class="mono">VIAGS-KPI-NQ57-DEV / TEST / PROD</span>. Danh mục KPI_Master và Org_Unit chỉ Admin và VP Đảng ủy được sửa, đi qua quy trình thay đổi.</div></div>
+      <div class="card"><div class="ct">${ICON.check} Data quality rules</div>
+        <div class="cd">Bắt buộc KPI_ID · Org_ID · Period_ID · actual_value hoặc actual_text · evidence khi KPI yêu cầu. Kiểm tra kiểu dữ liệu và ngưỡng hợp lý. Lỗi ghi vào bảng <span class="mono">Data_Quality_Issue</span>.</div></div>
+      <div class="card"><div class="ct">${ICON.link} Lineage</div>
+        <div class="cd">Lineage view hiển thị nguồn → dataflows → semantic model → reports → external dependencies. Mọi kết quả chấm điểm lưu <span class="mono">calc_version</span> để truy vết khi công thức đổi.</div></div>
+      <div class="card"><div class="ct">${ICON.lock} Bảo mật</div>
+        <div class="cd">Xác thực qua Microsoft Entra ID / SSO. Sensitivity label cho semantic model và report, hạn chế export theo chính sách nội bộ. Hạn chế chia sẻ tự phát ngoài Power BI App.</div></div>
+    </div>
+
+    ${C.listHead('Audit log gần đây',AUDIT.length,'<span>Ghi nhận: tạo/sửa/xoá submission · minh chứng · phê duyệt · khoá kỳ · refresh · export</span>')}
+    <div class="tl">
+      ${AUDIT.map(a=>`<div class="tl-item" data-fig="List/AuditRow"><div class="tl-rail"><span class="d" style="background:${a.c}"></span><span class="l"></span></div>
+        <div class="tl-b"><div class="tl-t">${a.a} <span class="mono" style="color:var(--muted-fg);font-weight:400">${a.t}</span></div>
+        <div class="tl-m">${a.o} · <b style="color:var(--fg);font-weight:500">${a.u}</b></div></div></div>`).join('')}
+    </div>`;
+  },
+  panel(){
+    return C.panelHead('Trạng thái vận hành')+`
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Workspace</span></div>
+      ${C.kv('PROD','<span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>Bình thường</span>')}
+      ${C.kv('TEST','<span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>Bình thường</span>')}
+      ${C.kv('DEV','<span class="status"><i class="dot-sm" style="background:var(--st-c)"></i>Đang cập nhật</span>')}
+      ${C.kv('Gateway','<span class="status"><i class="dot-sm" style="background:var(--st-a)"></i>Online</span>')}
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Lỗi refresh gần nhất</span></div>
+      <div class="al-d" style="margin:0">12/07 15:00 — timeout khi đọc SharePoint List <span class="mono">KPI_Submission</span>. Đã chạy lại lúc 15:22 thành công.</div>
+    </div>
+    <div class="pn-div"></div>
+    <div class="pn-sec">
+      <div class="pn-lbl"><span>Kiểm tra định kỳ</span></div>
+      ${C.kv('Rà soát quyền','Hằng quý')}
+      ${C.kv('Đối chiếu KPI_Master','Đầu mỗi kỳ')}
+      ${C.kv('Sao lưu semantic model','Hằng tuần')}
+      ${C.kv('Diễn tập khôi phục','6 tháng/lần')}
+    </div>`;
+  }
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   9 · ROUTER
+   ══════════════════════════════════════════════════════════════════════════ */
+const NAVGROUPS=[
+  {k:'bod', label:'Dashboard BOD'},
+  {k:'bcd', label:'Ban Chỉ đạo'},
+  {k:'unit',label:'Cổng đơn vị · '+ME.code},
+  {k:'adm', label:'Quản trị hệ thống'},
+];
+let CUR='bod-01';
+
+function renderNav(){
+  const inbox=`<button class="sb-item" data-fig="Sidebar/NavItem">${ICON.inbox}<span class="lbl">Thông báo</span><span class="badge">3</span></button>`;
+  const groups=NAVGROUPS.map(g=>{
+    const items=Object.entries(SCREENS).filter(([,s])=>s.group===g.k).map(([id,s])=>
+      `<button class="sb-item ${id===CUR?'active':''}" data-go="${id}" data-fig="Sidebar/NavItem">
+         ${ICON[s.nav.icon]}<span class="lbl">${s.nav.label}</span>
+         ${s.nav.badge?`<span class="badge">${s.nav.badge}</span>`:s.nav.count?`<span class="cnt mono">${s.nav.count}</span>`:''}
+       </button>`).join('');
+    return `<div class="sb-group"><div class="sb-label">${g.label}</div>${items}</div>`;
+  }).join('');
+  const layers=`<div class="sb-group"><div class="sb-label">Lớp chỉ số</div>
+    ${[['b','Lớp A · Chỉ đạo',17],['cyan','Lớp B · Quản trị',37],['orange','Lớp C · Chuyên đề',21]]
+      .map(([c,n,v])=>`<button class="sb-item"><span class="dot" style="background:${CV[c]};margin-left:4px"></span><span class="lbl">${n}</span><span class="cnt mono">${v}</span></button>`).join('')}
+   </div>
+   <div class="sb-group"><div class="sb-label">Kỳ đánh giá</div>
+    ${[['a','Quý II/2027','đang mở'],['gray','Quý I/2027',''],['gray','Năm 2026','']]
+      .map(([c,n,v])=>`<button class="sb-item"><span class="dot" style="background:${CV[c]};margin-left:4px"></span><span class="lbl">${n}</span><span class="cnt">${v}</span></button>`).join('')}
+   </div>`;
+  $('nav').innerHTML=inbox+groups+layers;
+  $('nav').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+
+function render(){
+  const s=SCREENS[CUR];
+  const tabs=Object.entries(SCREENS).filter(([,x])=>x.group===s.group);
+  $('hdr').innerHTML=`
+    <div class="hdr-l">
+      <button class="icon-btn" title="Ẩn/hiện thanh bên">${ICON.panelL}</button>
+      <span class="crumb">${s.code}<span class="sep">·</span><span class="sub">${s.title}</span></span>
+      <div class="tabs" data-fig="Header/Tabs">${tabs.map(([id,x])=>
+        `<button class="tab ${id===CUR?'active':''}" data-go="${id}">${x.nav.label}${x.nav.count?` <span class="n mono">${x.nav.count}</span>`:x.nav.badge?` <span class="n mono">${x.nav.badge}</span>`:''}</button>`).join('')}</div>
+    </div>
+    <div class="hdr-r">
+      <div class="search" data-fig="Header/SearchField">${ICON.search}Tìm đơn vị, mã KPI…<span class="kbd mono">⌘K</span></div>
+      <button class="icon-btn" title="Thông báo">${ICON.bell}</button>
+      <span class="avatar">VP</span>
+    </div>`;
+  $('subhdr').innerHTML=`
+    <div class="chips">
+      ${(s.chips||[]).map(([k,v])=>`<button class="chip" data-fig="Header/FilterChip"><span class="k">${k}</span> ${v}${ICON.chevron}</button>`).join('')}
+      <button class="chip ghost">${ICON.plus} Thêm bộ lọc</button>
+    </div>
+    <div class="hdr-r">
+      <span class="stamp">${s.stamp||'<span class="dot-sm" style="background:var(--st-b)"></span> Cập nhật · <span class="mono">15/07 03:00</span>'}</span>
+      <button class="chip">${ICON.sliders} Hiển thị</button>
+    </div>`;
+  $('main').innerHTML=s.main();
+  $('panel').innerHTML=s.panel?s.panel():'';
+  $('panel').style.display=s.panel?'':'none';
+  $('main').scrollTop=0;
+  $('hdr').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+}
+function go(id){ CUR=id; renderNav(); render(); location.hash=id; }
+
+/* Theme + Figma frame */
+$('themeBtn').onclick=()=>{
+  const d=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',d?'light':'dark');
+};
+$('frameBtn').onclick=()=>{
+  document.body.classList.toggle('frame-1440');
+  document.documentElement.classList.toggle('frame-host');
+};
+window.addEventListener('hashchange',()=>{const id=location.hash.slice(1); if(SCREENS[id]&&id!==CUR) go(id);});
+if(SCREENS[location.hash.slice(1)]) CUR=location.hash.slice(1);
+/* ?theme=dark và ?frame=1440 — tiện chụp ảnh hàng loạt để đưa vào Figma */
+const Q=new URLSearchParams(location.search);
+if(Q.get('theme')==='dark') document.documentElement.setAttribute('data-theme','dark');
+if(Q.get('frame')==='1440'){ document.body.classList.add('frame-1440'); document.documentElement.classList.add('frame-host'); }
+renderNav(); render();
+</script>
+</body>
+</html>
